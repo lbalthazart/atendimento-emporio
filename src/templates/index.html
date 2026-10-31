@@ -63,10 +63,10 @@
   <!-- Banner Informativo (Fixo) -->
   <div class="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-center text-xs text-amber-200/90 shrink-0">
     <i class="fa-solid fa-clock mr-1 text-amber-400"></i>
-    Seg a Sex 09h às 18h | Sáb 09h às 13h • 5% no PIX à vista • Frete grátis em Campo Grande acima de R$ 500
+    Seg a Sex 09h às 18h | Sáb 09h às 13h • 5% no PIX à vista • Fila de mensagens inteligente (Debounce ativo)
   </div>
 
-  <!-- Chat Container (h-full com flex-1 e min-h-0 para scrolling interno perfeito) -->
+  <!-- Chat Container -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col min-h-0 overflow-hidden">
     
     <!-- Mensagens (Apenas esta área rola verticalmente) -->
@@ -78,7 +78,7 @@
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm text-slate-200 shadow-sm leading-relaxed chat-prose">
           <p>Olá! Seja muito bem-vindo à <strong>Empório da Música</strong>! 🎸</p>
-          <p class="mt-1.5">Eu sou o atendente virtual da loja. Como posso te ajudar hoje? Posso te indicar guitarras e violões de acordo com seu estilo musical, consultar preços com desconto no PIX, verificar o andamento do seu pedido ou tirar dúvidas sobre nossas garantias e entregas!</p>
+          <p class="mt-1.5">Eu sou o atendente virtual da loja. Você pode enviar várias mensagens seguidas que eu reúno seu pensamento e respondo tudo junto! Como posso te ajudar hoje?</p>
         </div>
       </div>
     </div>
@@ -108,7 +108,7 @@
         <input 
           id="messageInput" 
           type="text" 
-          placeholder="Digite sua mensagem sobre instrumentos, pedidos ou dúvidas..." 
+          placeholder="Envie sua mensagem (pode enviar várias frases rápidas seguidas)..." 
           class="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none"
           autocomplete="off"
         />
@@ -131,11 +131,11 @@
       </form>
     </div>
 
-    <!-- Footer de LGPD e Tecnologia (Fixo) -->
+    <!-- Footer de LGPD e Fila de Mensagens -->
     <div class="mt-2 text-center text-[11px] text-slate-400 flex items-center justify-center gap-2 shrink-0">
-      <span><i class="fa-solid fa-shield-halved text-emerald-400"></i> Conformidade LGPD: histórico retido por 7 dias</span>
+      <span><i class="fa-solid fa-layer-group text-amber-400"></i> Fila inteligente: agrupa mensagens rápidas em um único raciocínio</span>
       <span>•</span>
-      <span>Alimentado por OpenRouter</span>
+      <span><i class="fa-solid fa-shield-halved text-emerald-400"></i> LGPD 7 dias</span>
     </div>
   </main>
 
@@ -163,7 +163,6 @@
     }
 
     function scrollToBottom() {
-      // Garante rolagem suave até a última mensagem
       requestAnimationFrame(() => {
         chatBox.scrollTop = chatBox.scrollHeight;
       });
@@ -219,38 +218,60 @@
       scrollToBottom();
     }
 
-    function appendTyping() {
-      const typingDiv = document.createElement('div');
-      typingDiv.id = 'typingIndicator';
-      typingDiv.className = 'flex items-start gap-3 message-enter';
-      typingDiv.innerHTML = `
-        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-sm text-slate-400 flex items-center gap-2">
-          <i class="fa-solid fa-circle-notch fa-spin text-amber-400 text-xs"></i>
-          <span>Consultando catálogo e preparando resposta...</span>
-        </div>
-      `;
-      chatBox.appendChild(typingDiv);
-      scrollToBottom();
-    }
-
     function removeTyping() {
       const typing = document.getElementById('typingIndicator');
       if (typing) typing.remove();
     }
 
-    async function sendMessage(text) {
-      if (!text || text.trim() === '') return;
-      appendMessage('user', text);
-      messageInput.value = '';
-      btnSubmit.disabled = true;
-      appendTyping();
+    function showBufferingIndicator(count) {
+      removeTyping();
+      const div = document.createElement('div');
+      div.id = 'typingIndicator';
+      div.className = 'flex items-start gap-3 message-enter';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
+        <div class="bg-slate-800 border border-amber-500/40 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs text-amber-300 flex items-center gap-2">
+          <i class="fa-solid fa-hourglass-start fa-spin text-amber-400 text-xs"></i>
+          <span>Fila ativa: ${count} mensagem(ns) acumulada(s). Envie mais ou aguarde 2 segundos para o agente responder...</span>
+        </div>
+      `;
+      chatBox.appendChild(div);
+      scrollToBottom();
+    }
+
+    function showProcessingIndicator() {
+      removeTyping();
+      const div = document.createElement('div');
+      div.id = 'typingIndicator';
+      div.className = 'flex items-start gap-3 message-enter';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-sm text-slate-300 flex items-center gap-2">
+          <i class="fa-solid fa-circle-notch fa-spin text-amber-400 text-xs"></i>
+          <span>Processando todas as mensagens recebidas na fila...</span>
+        </div>
+      `;
+      chatBox.appendChild(div);
+      scrollToBottom();
+    }
+
+    // --- FILA DE MENSAGENS / DEBOUNCE INTELIGENTE ---
+    let messageQueue = [];
+    let debounceTimer = null;
+    const DEBOUNCE_WAIT_MS = 2200; // 2.2 segundos para acumular mensagens subsequentes
+
+    async function dispatchQueuedMessages() {
+      if (messageQueue.length === 0) return;
+
+      const combinedText = messageQueue.join('\n');
+      messageQueue = [];
+      showProcessingIndicator();
 
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: sessionId, message: text })
+          body: JSON.stringify({ session_id: sessionId, message: combinedText })
         });
         const data = await response.json();
         removeTyping();
@@ -259,21 +280,38 @@
         removeTyping();
         appendMessage('assistant', 'Desculpe, ocorreu um erro de conexão com o servidor. Verifique se o backend está em execução.');
       } finally {
-        btnSubmit.disabled = false;
         messageInput.focus();
         scrollToBottom();
       }
     }
 
+    function queueUserMessage(text) {
+      if (!text || text.trim() === '') return;
+      
+      const cleanText = text.trim();
+      // Mostra o balão do usuário na hora na tela
+      appendMessage('user', cleanText);
+      messageInput.value = '';
+      messageInput.focus();
+
+      // Coloca na fila de acumulação
+      messageQueue.push(cleanText);
+      showBufferingIndicator(messageQueue.length);
+
+      // Reinicia o cronômetro do debounce para cada nova mensagem enviada
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(dispatchQueuedMessages, DEBOUNCE_WAIT_MS);
+    }
+
     chatForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      sendMessage(messageInput.value);
+      queueUserMessage(messageInput.value);
     });
 
     // Botões de perguntas rápidas
     document.querySelectorAll('.quick-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        sendMessage(btn.getAttribute('data-msg'));
+        queueUserMessage(btn.getAttribute('data-msg'));
       });
     });
 
@@ -300,7 +338,7 @@
       formData.append('message', 'Por favor, avalie a imagem deste instrumento.');
 
       appendMessage('user', `[Foto enviada: ${file.name}]`);
-      appendTyping();
+      showProcessingIndicator();
 
       try {
         const res = await fetch('/api/media', { method: 'POST', body: formData });
