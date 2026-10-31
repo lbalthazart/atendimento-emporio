@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atendimento_emporio
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - LLM_PROVIDER=openrouter
+      - LLM_MODEL=openai/gpt-4o-mini
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - emporio_data:/app/data
+
+volumes:
+  emporio_data:

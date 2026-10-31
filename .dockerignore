@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.git
+.gitignore
+.pytest_cache/
+tests/
+.env
+desafio_tecnico_ai_eng_artefact.pdf
+*.sqlite3
+*.db
