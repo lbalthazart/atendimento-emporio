@@ -3,132 +3,209 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Empório da Música - Atendimento ao Cliente</title>
+  <title>Empório da Música - Atendimento Oficial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Markdown parser para renderizar negrito, listas e parágrafos perfeitamente -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <style>
-    .message-enter { animation: fadeIn 0.25s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
 
-    /* Estilização para o Markdown renderizado dentro das bolhas */
-    .chat-prose p { margin-bottom: 0.5rem; }
+    .message-enter {
+      animation: msgSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes msgSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Formatação rica e elegante do Markdown */
+    .chat-prose p { margin-bottom: 0.55rem; line-height: 1.55; }
     .chat-prose p:last-child { margin-bottom: 0; }
-    .chat-prose ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 0.5rem; }
-    .chat-prose ol { list-style-type: decimal; margin-left: 1.25rem; margin-bottom: 0.5rem; }
-    .chat-prose li { margin-bottom: 0.25rem; }
+    .chat-prose ul { list-style-type: none; padding-left: 0.25rem; margin-bottom: 0.5rem; }
+    .chat-prose li { position: relative; padding-left: 1.25rem; margin-bottom: 0.35rem; }
+    .chat-prose li::before {
+      content: "•";
+      color: #f59e0b;
+      font-weight: bold;
+      position: absolute;
+      left: 0.25rem;
+    }
     .chat-prose strong { color: #fef08a; font-weight: 600; }
+    .chat-prose a { color: #38bdf8; text-decoration: underline; }
 
-    /* Barra de rolagem sutil para o chat */
-    #chatBox::-webkit-scrollbar { width: 6px; }
+    /* Barra de rolagem discreta */
+    #chatBox::-webkit-scrollbar { width: 5px; }
     #chatBox::-webkit-scrollbar-track { background: transparent; }
-    #chatBox::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
-    #chatBox::-webkit-scrollbar-thumb:hover { background: #475569; }
+    #chatBox::-webkit-scrollbar-thumb { background: #272a34; border-radius: 9999px; }
+    #chatBox::-webkit-scrollbar-thumb:hover { background: #353945; }
+
+    /* Animação dos três pontinhos de digitando (estilo WhatsApp) */
+    .typing-dot {
+      animation: dotPulse 1.4s infinite ease-in-out both;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes dotPulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 h-screen flex flex-col font-sans overflow-hidden">
+<body class="bg-[#101114] text-slate-100 h-screen flex flex-col font-sans overflow-hidden antialiased">
 
-  <!-- Header (Fixo no topo) -->
-  <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 shrink-0 px-4 py-3 shadow-md z-20">
+  <!-- Header Comercial da Loja -->
+  <header class="bg-[#181a20]/95 backdrop-blur border-b border-slate-800/80 shrink-0 px-4 py-3 z-20 shadow-sm">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl shadow-inner">
-          <i class="fa-solid fa-guitar"></i>
+      
+      <!-- Logo e Identidade da Loja -->
+      <div class="flex items-center space-x-3.5">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-bold shadow-md shadow-amber-500/10">
+            <i class="fa-solid fa-guitar text-base"></i>
+          </div>
+          <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#181a20]" title="Online agora"></span>
         </div>
         <div>
-          <h1 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
-            Empório da Música
-            <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Online</span>
-          </h1>
-          <p class="text-xs text-slate-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-location-dot text-amber-500"></i> Rua 14 de Maio, 3200 • Campo Grande/MS
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-bold text-white tracking-tight">Empório da Música</h1>
+            <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Loja Oficial</span>
+          </div>
+          <p class="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+            <span>Campo Grande - MS</span>
+            <span>•</span>
+            <span class="text-emerald-400 font-medium">Atendimento ativo</span>
           </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button id="btnClear" title="Limpar conversa (LGPD)" class="text-xs text-slate-400 hover:text-rose-400 hover:bg-slate-700/50 px-2.5 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
-          <i class="fa-solid fa-trash-can"></i>
-          <span class="hidden sm:inline">Excluir Dados (LGPD)</span>
+      <!-- Ações do Topo -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Toggle Modo Avaliador / Inspecionar Tools -->
+        <button id="btnToggleInspector" title="Alternar visibilidade das ferramentas internas usadas pelo agente" class="text-xs text-slate-400 hover:text-amber-400 hover:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700/60 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-code text-xs"></i>
+          <span class="hidden md:inline" id="inspectorLabel">Inspecionar Tools</span>
         </button>
-        <a href="/docs" target="_blank" title="Swagger API Docs" class="text-xs text-slate-400 hover:text-amber-400 hover:bg-slate-700/50 px-2.5 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
-          <i class="fa-solid fa-code"></i>
-          <span class="hidden sm:inline">API</span>
+
+        <!-- Botão Limpar / LGPD -->
+        <button id="btnClear" title="Limpar conversa e dados pessoais (Direito ao esquecimento - LGPD)" class="text-xs text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700/60 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+          <span class="hidden sm:inline">Limpar</span>
+        </button>
+
+        <!-- Link API Swagger -->
+        <a href="/docs" target="_blank" title="Documentação Swagger REST" class="text-xs text-slate-400 hover:text-white hover:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700/60 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open text-xs"></i>
+          <span class="hidden sm:inline">Docs API</span>
         </a>
       </div>
     </div>
   </header>
 
-  <!-- Banner Informativo (Fixo) -->
-  <div class="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-center text-xs text-amber-200/90 shrink-0">
-    <i class="fa-solid fa-clock mr-1 text-amber-400"></i>
-    Seg a Sex 09h às 18h | Sáb 09h às 13h • 5% no PIX à vista • Fila de mensagens inteligente (Debounce ativo)
+  <!-- Barra de Informações Úteis da Loja (Endereço e Contatos) -->
+  <div class="bg-[#14151a] border-b border-slate-800/60 px-4 py-1.5 text-center text-xs text-slate-400 shrink-0 flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+    <span class="flex items-center gap-1">
+      <i class="fa-solid fa-location-dot text-amber-500 text-[11px]"></i>
+      Rua 14 de Maio, 3200 • Centro
+    </span>
+    <span class="hidden sm:inline text-slate-600">•</span>
+    <span class="flex items-center gap-1">
+      <i class="fa-brands fa-whatsapp text-emerald-400 text-[12px]"></i>
+      (67) 3321-4500
+    </span>
+    <span class="hidden sm:inline text-slate-600">•</span>
+    <span class="text-amber-300 font-medium flex items-center gap-1">
+      <i class="fa-solid fa-tag text-[10px]"></i>
+      5% de desconto no PIX
+    </span>
   </div>
 
-  <!-- Chat Container -->
-  <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col min-h-0 overflow-hidden">
+  <!-- Chat Container Central -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-3 flex flex-col min-h-0 overflow-hidden">
     
-    <!-- Mensagens (Apenas esta área rola verticalmente) -->
-    <div id="chatBox" class="flex-1 overflow-y-auto min-h-0 space-y-4 pr-2 pb-3 scroll-smooth">
-      <!-- Mensagem Inicial de Boas-Vindas -->
+    <!-- Área de Mensagens com Rolagem Independente -->
+    <div id="chatBox" class="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1.5 pb-2 scroll-smooth">
+      
+      <!-- Mensagem Inicial de Boas-Vindas da Loja -->
       <div class="flex items-start gap-3 message-enter">
-        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">
-          EM
+        <div class="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm shrink-0 mt-0.5">
+          <i class="fa-solid fa-music text-xs"></i>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm text-slate-200 shadow-sm leading-relaxed chat-prose">
-          <p>Olá! Seja muito bem-vindo à <strong>Empório da Música</strong>! 🎸</p>
-          <p class="mt-1.5">Eu sou o atendente virtual da loja. Você pode enviar várias mensagens seguidas que eu reúno seu pensamento e respondo tudo junto! Como posso te ajudar hoje?</p>
+        <div class="bg-[#1c1e24] border border-slate-800 text-slate-200 rounded-2xl rounded-tl-sm p-4 max-w-[85%] text-sm shadow-sm leading-relaxed chat-prose">
+          <p class="font-semibold text-white mb-1">Olá! Seja bem-vindo à Empório da Música! 🎸✨</p>
+          <p>Sou o consultor virtual da nossa loja aqui em Campo Grande. Posso te ajudar a encontrar instrumentos do nosso catálogo (guitarras, baixos, violões, baterias e teclados), checar preços, opções no PIX e prazos de entrega.</p>
+          <p class="mt-2 text-xs text-slate-400">Pode me mandar sua pergunta ou anexar a foto de um instrumento que você queira saber se temos disponível!</p>
         </div>
       </div>
+
     </div>
 
-    <!-- Sugestões de Perguntas Rápidas (Fixo acima do input) -->
-    <div id="quickQuestions" class="py-2 flex flex-wrap gap-1.5 shrink-0">
-      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quais guitarras vocês têm disponíveis?">
-        🎸 Ver Guitarras
+    <!-- Sugestões de Dúvidas Rápidas (Chips no estilo WhatsApp FAQ) -->
+    <div id="quickQuestions" class="py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+      <span class="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mr-1 shrink-0">Sugestões:</span>
+      <button class="quick-btn shrink-0 text-xs bg-[#191b22] hover:bg-slate-800 hover:border-amber-500/40 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-sm" data-msg="Quais guitarras vocês têm disponíveis?">
+        <span>🎸</span> Guitarras
       </button>
-      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quais opções de violões disponíveis custando até R$1000?">
-        🎼 Violões até R$ 1.000
+      <button class="quick-btn shrink-0 text-xs bg-[#191b22] hover:bg-slate-800 hover:border-amber-500/40 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-sm" data-msg="Quais opções de violões disponíveis custando até R$1000?">
+        <span>🎼</span> Violões até R$ 1.000
       </button>
-      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quanto custa o Takamine GD20?">
-        💰 Preço Takamine GD20
+      <button class="quick-btn shrink-0 text-xs bg-[#191b22] hover:bg-slate-800 hover:border-amber-500/40 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-sm" data-msg="Quanto custa o Takamine GD20?">
+        <span>🏷️</span> Takamine GD20
       </button>
-      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Qual o endereço e horário de funcionamento da loja?">
-        📍 Endereço e Horários
+      <button class="quick-btn shrink-0 text-xs bg-[#191b22] hover:bg-slate-800 hover:border-amber-500/40 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-sm" data-msg="Qual o endereço e horário de funcionamento da loja?">
+        <span>📍</span> Horários & Loja
       </button>
-      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Me arrependi da minha compra, posso devolver meu pedido?">
-        🔄 Devolução e CDC
+      <button class="quick-btn shrink-0 text-xs bg-[#191b22] hover:bg-slate-800 hover:border-amber-500/40 text-slate-300 border border-slate-800 px-3 py-1.5 rounded-full transition flex items-center gap-1.5 shadow-sm" data-msg="Me arrependi da minha compra online, posso devolver?">
+        <span>📦</span> Devoluções (CDC)
       </button>
     </div>
 
-    <!-- Input Box (Fixo, nunca desce ou sai da tela) -->
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-2 shadow-lg shrink-0">
+    <!-- Caixa de Entrada Fixa no Rodapé -->
+    <div class="bg-[#181a20] border border-slate-800 rounded-2xl p-2 shadow-xl shrink-0">
+      
       <!-- Barra de Pré-visualização de Imagem Anexada -->
-      <div id="attachmentPreview" class="hidden mb-2 px-3 py-1.5 bg-slate-900/90 border border-amber-500/40 rounded-xl flex items-center justify-between text-xs text-slate-300">
-        <div class="flex items-center gap-2 truncate">
-          <i class="fa-solid fa-image text-amber-400"></i>
-          <span class="text-slate-400 text-[11px]">Foto selecionada:</span>
-          <span id="attachmentName" class="truncate font-medium text-amber-300">foto.png</span>
-          <span id="attachmentSize" class="text-slate-500 text-[10px]"></span>
+      <div id="attachmentPreview" class="hidden mb-2 px-3 py-2 bg-[#121317] border border-amber-500/30 rounded-xl flex items-center justify-between text-xs text-slate-300">
+        <div class="flex items-center gap-2.5 truncate">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <i class="fa-solid fa-image text-xs"></i>
+          </div>
+          <div class="truncate">
+            <p id="attachmentName" class="truncate font-medium text-amber-200 text-xs">foto.png</p>
+            <p id="attachmentSize" class="text-slate-500 text-[10px]"></p>
+          </div>
         </div>
-        <button type="button" id="btnRemoveAttachment" title="Remover anexo" class="text-slate-400 hover:text-rose-400 transition ml-2 p-1">
-          <i class="fa-solid fa-xmark"></i>
+        <button type="button" id="btnRemoveAttachment" title="Remover anexo" class="text-slate-400 hover:text-rose-400 transition p-1.5 rounded-lg hover:bg-slate-800">
+          <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
 
+      <!-- Status de Fila de Mensagens Rápida (Discreto) -->
+      <div id="queueStatusPill" class="hidden mb-1.5 px-2.5 py-1 text-[11px] text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+          <span id="queueStatusText">1 mensagem na fila. Pode digitar mais frases...</span>
+        </span>
+        <span class="text-slate-400 text-[10px]">Aguardando pausa...</span>
+      </div>
+
+      <!-- Formulário de Digitação -->
       <form id="chatForm" class="flex items-center gap-2">
         <input 
           id="messageInput" 
           type="text" 
-          placeholder="Envie sua mensagem (pode enviar várias frases rápidas seguidas)..." 
-          class="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none"
+          placeholder="Digite sua mensagem para o Empório da Música..." 
+          class="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none"
           autocomplete="off"
         />
 
-        <!-- Botão Enviar Imagem -->
-        <label for="imageUpload" title="Enviar foto de instrumento" class="cursor-pointer text-slate-400 hover:text-amber-400 p-2 transition">
-          <i class="fa-solid fa-camera"></i>
+        <!-- Botão Anexar Imagem -->
+        <label for="imageUpload" title="Anexar foto de instrumento" class="cursor-pointer text-slate-400 hover:text-amber-400 p-2.5 rounded-xl hover:bg-slate-800/80 transition flex items-center justify-center">
+          <i class="fa-solid fa-camera text-base"></i>
           <input type="file" id="imageUpload" accept="image/*" class="hidden">
         </label>
 
@@ -136,7 +213,7 @@
         <button 
           type="submit" 
           id="btnSubmit" 
-          class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-1.5 shadow shrink-0"
+          class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-semibold px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-md shadow-amber-500/10 shrink-0"
         >
           <span>Enviar</span>
           <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -144,12 +221,13 @@
       </form>
     </div>
 
-    <!-- Footer de LGPD e Fila de Mensagens -->
-    <div class="mt-2 text-center text-[11px] text-slate-400 flex items-center justify-center gap-2 shrink-0">
-      <span><i class="fa-solid fa-layer-group text-amber-400"></i> Fila inteligente: agrupa mensagens rápidas em um único raciocínio</span>
+    <!-- Rodapé Discreto com Informações de Privacidade -->
+    <div class="mt-2 text-center text-[11px] text-slate-500 flex items-center justify-center gap-3 shrink-0">
+      <span><i class="fa-solid fa-shield-halved text-emerald-500/80 mr-1"></i> Dados protegidos sob a LGPD</span>
       <span>•</span>
-      <span><i class="fa-solid fa-shield-halved text-emerald-400"></i> LGPD 7 dias</span>
+      <span>Campo Grande/MS</span>
     </div>
+
   </main>
 
   <script>
@@ -159,16 +237,36 @@
     const btnSubmit = document.getElementById('btnSubmit');
     const btnClear = document.getElementById('btnClear');
     const imageUpload = document.getElementById('imageUpload');
+    const attachmentPreview = document.getElementById('attachmentPreview');
+    const attachmentName = document.getElementById('attachmentName');
+    const attachmentSize = document.getElementById('attachmentSize');
+    const btnRemoveAttachment = document.getElementById('btnRemoveAttachment');
+    const queueStatusPill = document.getElementById('queueStatusPill');
+    const queueStatusText = document.getElementById('queueStatusText');
+    const btnToggleInspector = document.getElementById('btnToggleInspector');
+    const inspectorLabel = document.getElementById('inspectorLabel');
 
-    // Configuração do Marked para conversão de Markdown
-    if (window.marked) {
-      marked.setOptions({
-        gfm: true,
-        breaks: true
+    let attachedFile = null;
+    let showToolsInspector = false;
+
+    // Alternar visibilidade técnica de ferramentas (Modo Avaliador)
+    btnToggleInspector.addEventListener('click', () => {
+      showToolsInspector = !showToolsInspector;
+      inspectorLabel.innerText = showToolsInspector ? 'Ocultar Tools' : 'Inspecionar Tools';
+      btnToggleInspector.classList.toggle('border-amber-500', showToolsInspector);
+      btnToggleInspector.classList.toggle('text-amber-400', showToolsInspector);
+
+      document.querySelectorAll('.tools-badge-container').forEach(el => {
+        el.style.display = showToolsInspector ? 'flex' : 'none';
       });
+    });
+
+    // Configuração do Markdown
+    if (window.marked) {
+      marked.setOptions({ gfm: true, breaks: true });
     }
 
-    // Recupera ou cria session_id persistido no localStorage
+    // Persistência de Sessão
     let sessionId = localStorage.getItem('emporio_session_id');
     if (!sessionId) {
       sessionId = 'web_' + Math.random().toString(36).substring(2, 12);
@@ -181,52 +279,68 @@
       });
     }
 
+    function getCurrentTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     function appendMessage(role, text, toolsUsed = []) {
       const isUser = role === 'user';
       const container = document.createElement('div');
-      container.className = `flex items-start gap-3 message-enter ${isUser ? 'flex-row-reverse' : ''}`;
+      container.className = `flex items-end gap-2.5 message-enter ${isUser ? 'justify-end' : 'justify-start'}`;
 
-      const avatar = document.createElement('div');
-      avatar.className = `w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0 text-sm ${
-        isUser ? 'bg-indigo-600 text-white' : 'bg-amber-500 text-slate-900'
-      }`;
-      avatar.innerText = isUser ? 'EU' : 'EM';
+      if (!isUser) {
+        // Avatar do consultor
+        const avatar = document.createElement('div');
+        avatar.className = 'w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs shrink-0 mb-1';
+        avatar.innerHTML = '<i class="fa-solid fa-guitar text-[10px]"></i>';
+        container.appendChild(avatar);
+      }
+
+      const bubbleWrapper = document.createElement('div');
+      bubbleWrapper.className = 'max-w-[85%] flex flex-col';
 
       const contentBox = document.createElement('div');
-      contentBox.className = `max-w-[85%] text-sm rounded-2xl p-3.5 shadow-sm leading-relaxed ${
+      contentBox.className = `text-sm px-4 py-3 leading-relaxed shadow-sm ${
         isUser 
-          ? 'bg-indigo-600/90 text-white rounded-tr-none' 
-          : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-tl-none chat-prose'
+          ? 'bg-[#2563eb] text-white rounded-2xl rounded-br-none' 
+          : 'bg-[#1c1e24] border border-slate-800 text-slate-200 rounded-2xl rounded-bl-none chat-prose'
       }`;
 
-      // Renderiza Markdown formatado ou texto puro
       if (isUser) {
         contentBox.innerText = text;
       } else {
         contentBox.innerHTML = window.marked ? marked.parse(text) : text.replace(/\n/g, '<br>');
       }
 
-      // Se utilizou ferramentas do sistema, exibe de forma discreta como rodapé técnico
+      // Rodapé com horário e status de entrega
+      const metaDiv = document.createElement('div');
+      metaDiv.className = `text-[10px] mt-1 flex items-center gap-1 ${isUser ? 'justify-end text-slate-400' : 'text-slate-500'}`;
+      metaDiv.innerHTML = `<span>${getCurrentTime()}</span>` + (isUser ? ' <i class="fa-solid fa-check-double text-sky-400 text-[10px]"></i>' : '');
+
+      // Badges técnicos de ferramentas (visíveis se o Modo Inspetor estiver ativado)
       if (toolsUsed && toolsUsed.length > 0) {
         const toolsDiv = document.createElement('div');
-        toolsDiv.className = 'mt-3 pt-2 border-t border-slate-700/60 flex items-center gap-1.5 flex-wrap';
+        toolsDiv.className = 'tools-badge-container mt-2.5 pt-2 border-t border-slate-800 items-center gap-1.5 flex-wrap';
+        toolsDiv.style.display = showToolsInspector ? 'flex' : 'none';
         
         const label = document.createElement('span');
-        label.className = 'text-[10px] text-slate-400 font-medium';
-        label.innerText = '⚙️ Consulta interna:';
+        label.className = 'text-[10px] text-slate-500 font-mono';
+        label.innerText = '⚙️ tools:';
         toolsDiv.appendChild(label);
 
         toolsUsed.forEach(tool => {
           const badge = document.createElement('span');
-          badge.className = 'text-[10px] bg-slate-900/80 border border-amber-500/20 text-amber-300/80 px-2 py-0.5 rounded-full font-mono';
+          badge.className = 'text-[10px] bg-[#121317] border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded-md font-mono';
           badge.innerText = tool;
           toolsDiv.appendChild(badge);
         });
         contentBox.appendChild(toolsDiv);
       }
 
-      container.appendChild(avatar);
-      container.appendChild(contentBox);
+      bubbleWrapper.appendChild(contentBox);
+      bubbleWrapper.appendChild(metaDiv);
+      container.appendChild(bubbleWrapper);
       chatBox.appendChild(container);
       scrollToBottom();
     }
@@ -236,49 +350,37 @@
       if (typing) typing.remove();
     }
 
-    function showBufferingIndicator(count) {
+    function showTypingAnimation() {
       removeTyping();
       const div = document.createElement('div');
       div.id = 'typingIndicator';
-      div.className = 'flex items-start gap-3 message-enter';
+      div.className = 'flex items-center gap-2.5 message-enter';
       div.innerHTML = `
-        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
-        <div class="bg-slate-800 border border-amber-500/40 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs text-amber-300 flex items-center gap-2">
-          <i class="fa-solid fa-hourglass-start fa-spin text-amber-400 text-xs"></i>
-          <span>Fila ativa: ${count} mensagem(ns) acumulada(s). Envie mais ou aguarde 2 segundos para o agente responder...</span>
+        <div class="w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs shrink-0">
+          <i class="fa-solid fa-guitar text-[10px]"></i>
+        </div>
+        <div class="bg-[#1c1e24] border border-slate-800 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-400 typing-dot"></span>
+          <span class="w-2 h-2 rounded-full bg-amber-400 typing-dot"></span>
+          <span class="w-2 h-2 rounded-full bg-amber-400 typing-dot"></span>
         </div>
       `;
       chatBox.appendChild(div);
       scrollToBottom();
     }
 
-    function showProcessingIndicator() {
-      removeTyping();
-      const div = document.createElement('div');
-      div.id = 'typingIndicator';
-      div.className = 'flex items-start gap-3 message-enter';
-      div.innerHTML = `
-        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-sm text-slate-300 flex items-center gap-2">
-          <i class="fa-solid fa-circle-notch fa-spin text-amber-400 text-xs"></i>
-          <span>Processando todas as mensagens recebidas na fila...</span>
-        </div>
-      `;
-      chatBox.appendChild(div);
-      scrollToBottom();
-    }
-
-    // --- FILA DE MENSAGENS / DEBOUNCE INTELIGENTE ---
+    // --- FILA INTELIGENTE DE MENSAGENS (DEBOUNCE) ---
     let messageQueue = [];
     let debounceTimer = null;
-    const DEBOUNCE_WAIT_MS = 2200; // 2.2 segundos para acumular mensagens subsequentes
+    const DEBOUNCE_WAIT_MS = 2200;
 
     async function dispatchQueuedMessages() {
       if (messageQueue.length === 0) return;
 
       const combinedText = messageQueue.join('\n');
       messageQueue = [];
-      showProcessingIndicator();
+      queueStatusPill.classList.add('hidden');
+      showTypingAnimation();
 
       try {
         const response = await fetch('/api/chat', {
@@ -291,7 +393,7 @@
         appendMessage('assistant', data.reply, data.tools_used);
       } catch (err) {
         removeTyping();
-        appendMessage('assistant', 'Desculpe, ocorreu um erro de conexão com o servidor. Verifique se o backend está em execução.');
+        appendMessage('assistant', 'Desculpe, ocorreu uma instabilidade temporária na conexão. Por favor, tente novamente ou fale com a gente pelo WhatsApp (67) 3321-4500.');
       } finally {
         messageInput.focus();
         scrollToBottom();
@@ -302,28 +404,21 @@
       if (!text || text.trim() === '') return;
       
       const cleanText = text.trim();
-      // Mostra o balão do usuário na hora na tela
       appendMessage('user', cleanText);
       messageInput.value = '';
       messageInput.focus();
 
-      // Coloca na fila de acumulação
       messageQueue.push(cleanText);
-      showBufferingIndicator(messageQueue.length);
+      
+      // Atualiza o indicador suave de fila
+      queueStatusText.innerText = `${messageQueue.length} mensagem(ns) acumulada(s)... Pode enviar mais frases!`;
+      queueStatusPill.classList.remove('hidden');
 
-      // Reinicia o cronômetro do debounce para cada nova mensagem enviada
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(dispatchQueuedMessages, DEBOUNCE_WAIT_MS);
     }
 
-    // Elementos da barra de anexo
-    const attachmentPreview = document.getElementById('attachmentPreview');
-    const attachmentName = document.getElementById('attachmentName');
-    const attachmentSize = document.getElementById('attachmentSize');
-    const btnRemoveAttachment = document.getElementById('btnRemoveAttachment');
-    let attachedFile = null;
-
-    // Quando o usuário escolhe uma foto: anexa e permite digitar legenda/pergunta
+    // Quando o usuário escolhe uma foto
     imageUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -341,10 +436,10 @@
       attachedFile = null;
       imageUpload.value = '';
       attachmentPreview.classList.add('hidden');
-      messageInput.placeholder = 'Envie sua mensagem (pode enviar várias frases rápidas seguidas)...';
+      messageInput.placeholder = 'Digite sua mensagem para o Empório da Música...';
     });
 
-    // Submissão do formulário: suporta envio conjunto (Foto + Pergunta) ou texto na fila
+    // Submissão do formulário
     chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -352,20 +447,17 @@
         const fileToSend = attachedFile;
         const userText = messageInput.value.trim();
 
-        // Limpa estado do anexo e do input
         attachedFile = null;
         imageUpload.value = '';
         attachmentPreview.classList.add('hidden');
         messageInput.value = '';
-        messageInput.placeholder = 'Envie sua mensagem (pode enviar várias frases rápidas seguidas)...';
+        messageInput.placeholder = 'Digite sua mensagem para o Empório da Música...';
 
-        // Mostra na tela a foto + a pergunta que o usuário digitou
         const userBalloon = userText 
-          ? `📸 [Foto anexada: ${fileToSend.name}]
-${userText}`
+          ? `📸 [Foto: ${fileToSend.name}]\n${userText}`
           : `📸 [Foto enviada: ${fileToSend.name}]`;
         appendMessage('user', userBalloon);
-        showProcessingIndicator();
+        showTypingAnimation();
 
         const formData = new FormData();
         formData.append('file', fileToSend);
@@ -389,11 +481,10 @@ ${userText}`
         return;
       }
 
-      // Se não há imagem anexada, usa a fila normal com debounce
       queueUserMessage(messageInput.value);
     });
 
-    // Botões de perguntas rápidas
+    // Perguntas rápidas
     document.querySelectorAll('.quick-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         queueUserMessage(btn.getAttribute('data-msg'));
@@ -402,13 +493,13 @@ ${userText}`
 
     // Exclusão de dados / Direito ao esquecimento
     btnClear.addEventListener('click', async () => {
-      if (!confirm('Deseja realmente apagar todos os dados desta conversa conforme a LGPD?')) return;
+      if (!confirm('Deseja realmente apagar o histórico desta conversa conforme a LGPD?')) return;
       try {
         await fetch(`/api/history/${sessionId}`, { method: 'DELETE' });
         localStorage.removeItem('emporio_session_id');
         location.reload();
       } catch (e) {
-        alert('Erro ao excluir dados.');
+        alert('Erro ao excluir histórico.');
       }
     });
   </script>
