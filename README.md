@@ -381,14 +381,21 @@ Conversas completas e detalhadas demonstrando o comportamento do agente encontra
 
 ---
 
-## ⚖ Limitações Conhecidas & Próximos Passos
+## ⚖ Limitações Conhecidas & Próximos Passos (Roadmap)
 
-Caso houvesse mais tempo de desenvolvimento, as seguintes melhorias seriam priorizadas:
+Caso houvesse mais tempo de desenvolvimento, as seguintes melhorias arquiteturais e de negócio seriam priorizadas no roadmap:
 
-1. **Reserva Automática de Estoque em Tempo Real**: Integração transacional com o ERP da loja para travar o item no carrinho durante a geração do pedido.
-2. **Geração de Cobrança PIX Copia-e-Cola Dinâmica**: Integração direta com gateway bancário para gerar o QR Code e chave PIX instantaneamente no chat.
-3. **Reranker Semântico para Políticas**: Adição de um modelo de re-ranking (como Cohere Rerank) para refinar a precisão em trechos altamente específicos de manuais contratuais extensos.
-4. **Framework de Avaliação Contínua (LLM Evals)**: Implementação de pipeline de testes automatizados com *LLM-as-a-Judge* (ex: DeepEval ou Ragas) medindo acurácia factual, tom de voz e taxa de recusa de prompt injection a cada commit.
+1. **Painel do Administrador com Login Seguro & Chat Humano de Transbordo (Human-in-the-Loop)**:
+   - **Interface de Login do Administrador**: Autenticação administrativa com credenciais fortes, suporte a MFA (Autenticação Multifator) e controle de permissões por perfil (operador de vendas vs. gerente de suporte).
+   - **Console de Transbordo Humano em Tempo Real**: Dashboard em que o atendente humano da loja assume diretamente as conversas que acionaram o estado de pausa de IA (`is_human_paused = True`). O operador conversa com o cliente na mesma linha de tempo sem sobreposição do bot e tem o poder de reativar a automação assim que o atendimento humanizado for finalizado.
+2. **Módulo de CRM Completo de Clientes Ativos**:
+   - **Base Estruturada de Clientes (Visão 360°)**: Expansão da tabela relacional `customers` para um painel gerencial de CRM contendo os dados dos clientes ativos da loja: dados cadastrais protegidos, histórico completo de pedidos (`orders`), marcas e instrumentos favoritos, ticket médio e status de fidelidade.
+   - **Histórico Unificado de Interações**: Cruzamento de atendimentos anteriores com compras faturadas, permitindo recomendações ultra-personalizadas pelo consultor humano e ações proativas de pós-venda (ex: aviso de chegada de instrumentos desejados).
+   - **Auditoria de Acesso LGPD**: Registro estrito de logs de auditoria sempre que um atendente consultar dados de contato de um cliente, garantindo rastreabilidade total conforme a Lei 13.709/2018.
+3. **Reserva Automática de Estoque em Tempo Real**: Integração transacional com o ERP da loja para travar o item no carrinho durante a negociação ou geração do pedido.
+4. **Geração de Cobrança PIX Copia-e-Cola Dinâmica**: Integração direta com gateway bancário para gerar o QR Code e chave PIX dinâmica instantaneamente na conversa.
+5. **Reranker Semântico para Políticas**: Adição de um modelo de re-ranking (como Cohere Rerank) para refinar a precisão em trechos altamente específicos de manuais contratuais extensos.
+6. **Framework de Avaliação Contínua (LLM Evals)**: Implementação de pipeline de testes automatizados com *LLM-as-a-Judge* (ex: DeepEval ou Ragas) medindo acurácia factual, tom de voz e taxa de recusa de prompt injection a cada commit.
 
 ---
 
