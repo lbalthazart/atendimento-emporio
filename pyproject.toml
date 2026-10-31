@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atendimento-emporio"
+version = "1.0.0"
+description = "Agente de Atendimento Inteligente - Empório da Música"
+authors = [{ name = "Lucas Balthazar" }]
+readme = "README.md"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
