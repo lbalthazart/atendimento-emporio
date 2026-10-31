@@ -6,9 +6,19 @@
   <title>Empório da Música - Atendimento ao Cliente</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Markdown parser para renderizar negrito, listas e parágrafos perfeitamente -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     .message-enter { animation: fadeIn 0.25s ease-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Estilização para o Markdown renderizado dentro das bolhas */
+    .chat-prose p { margin-bottom: 0.5rem; }
+    .chat-prose p:last-child { margin-bottom: 0; }
+    .chat-prose ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 0.5rem; }
+    .chat-prose ol { list-style-type: decimal; margin-left: 1.25rem; margin-bottom: 0.5rem; }
+    .chat-prose li { margin-bottom: 0.25rem; }
+    .chat-prose strong { color: #fef08a; font-weight: 600; }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
@@ -60,29 +70,29 @@
         <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">
           EM
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm text-slate-200 shadow-sm leading-relaxed">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm text-slate-200 shadow-sm leading-relaxed chat-prose">
           <p>Olá! Seja muito bem-vindo à <strong>Empório da Música</strong>! 🎸</p>
-          <p class="mt-1.5">Eu sou o atendente virtual da loja. Como posso te ajudar hoje? Posso consultar nosso estoque de instrumentos, verificar preços com desconto no PIX, conferir o status do seu pedido ou tirar dúvidas sobre nossas políticas de entrega e garantia!</p>
+          <p class="mt-1.5">Eu sou o atendente virtual da loja. Como posso te ajudar hoje? Posso te indicar guitarras e violões de acordo com seu estilo musical, consultar preços com desconto no PIX, verificar o andamento do seu pedido ou tirar dúvidas sobre nossas garantias e entregas!</p>
         </div>
       </div>
     </div>
 
     <!-- Sugestões de Perguntas Rápidas -->
     <div id="quickQuestions" class="py-2 flex flex-wrap gap-1.5">
+      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quais guitarras vocês têm disponíveis?">
+        🎸 Ver Guitarras
+      </button>
       <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quais opções de violões disponíveis custando até R$1000?">
-        🎸 Violões até R$ 1.000
+        🎼 Violões até R$ 1.000
       </button>
       <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quanto custa o Takamine GD20?">
-        💰 Preço do Takamine GD20
+        💰 Preço Takamine GD20
       </button>
       <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Qual o endereço e horário de funcionamento da loja?">
         📍 Endereço e Horários
       </button>
       <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Me arrependi da minha compra, posso devolver meu pedido?">
-        🔄 Devolução e Arrependimento
-      </button>
-      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Vocês vendem palhetas e cabos?">
-        🚫 Venda de Acessórios
+        🔄 Devolução e CDC
       </button>
     </div>
 
@@ -130,6 +140,14 @@
     const btnClear = document.getElementById('btnClear');
     const imageUpload = document.getElementById('imageUpload');
 
+    // Configuração do Marked para conversão de Markdown
+    if (window.marked) {
+      marked.setOptions({
+        gfm: true,
+        breaks: true
+      });
+    }
+
     // Recupera ou cria session_id persistido no localStorage
     let sessionId = localStorage.getItem('emporio_session_id');
     if (!sessionId) {
@@ -152,26 +170,30 @@
       contentBox.className = `max-w-[85%] text-sm rounded-2xl p-3.5 shadow-sm leading-relaxed ${
         isUser 
           ? 'bg-indigo-600/90 text-white rounded-tr-none' 
-          : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-tl-none'
+          : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-tl-none chat-prose'
       }`;
 
-      // Formatação simples de parágrafos
-      const paragraphs = text.split('\n').filter(p => p.trim() !== '');
-      paragraphs.forEach((p, idx) => {
-        const pElem = document.createElement('p');
-        if (idx > 0) pElem.className = 'mt-1.5';
-        pElem.innerText = p;
-        contentBox.appendChild(pElem);
-      });
+      // Renderiza Markdown formatado ou texto puro
+      if (isUser) {
+        contentBox.innerText = text;
+      } else {
+        contentBox.innerHTML = window.marked ? marked.parse(text) : text.replace(/\n/g, '<br>');
+      }
 
-      // Se utilizou ferramentas, exibe badge informativo
+      // Se utilizou ferramentas do sistema, exibe de forma discreta como rodapé técnico
       if (toolsUsed && toolsUsed.length > 0) {
         const toolsDiv = document.createElement('div');
-        toolsDiv.className = 'mt-2 pt-2 border-t border-slate-700/60 flex items-center gap-1.5 flex-wrap';
+        toolsDiv.className = 'mt-3 pt-2 border-t border-slate-700/60 flex items-center gap-1.5 flex-wrap';
+        
+        const label = document.createElement('span');
+        label.className = 'text-[10px] text-slate-400 font-medium';
+        label.innerText = '⚙️ Consulta interna:';
+        toolsDiv.appendChild(label);
+
         toolsUsed.forEach(tool => {
           const badge = document.createElement('span');
-          badge.className = 'text-[10px] bg-slate-900/60 border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1';
-          badge.innerHTML = `<i class="fa-solid fa-wrench text-[8px]"></i> ${tool}`;
+          badge.className = 'text-[10px] bg-slate-900/80 border border-amber-500/20 text-amber-300/80 px-2 py-0.5 rounded-full font-mono';
+          badge.innerText = tool;
           toolsDiv.appendChild(badge);
         });
         contentBox.appendChild(toolsDiv);
@@ -191,7 +213,7 @@
         <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
         <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-sm text-slate-400 flex items-center gap-2">
           <i class="fa-solid fa-circle-notch fa-spin text-amber-400 text-xs"></i>
-          <span>Consultando informações da Empório da Música...</span>
+          <span>Consultando catálogo e preparando resposta...</span>
         </div>
       `;
       chatBox.appendChild(typingDiv);
