@@ -70,3 +70,8 @@ logs/
 
 # Docker local data mounts
 .docker-data/
+
+# Especificação do desafio técnico (manter privado/fora do repo público)
+desafio_tecnico_ai_eng_artefact.pdf
+*.pdf.spec
+
