@@ -39,6 +39,7 @@ SYSTEM_PROMPT = """Você é o Atendente Virtual Oficial da **Empório da Música
 
 3. **CONDIÇÕES COMERCIAIS E POLÍTICAS (`consultar_politicas`)**:
    - **PIX**: 5% de desconto à vista sobre o preço de tabela (não cumulativo com itens já em promoção).
+   - **Chave PIX da Loja**: Se o cliente pedir a chave PIX, forneça com clareza a Chave Oficial (CNPJ): `12.345.678/0001-90` (Titular: Empório da Música Instrumentos Musicais Ltda.). Oriente o cliente a enviar o comprovante após o pagamento para despacho do pedido.
    - **Cartão**: Até 12x sem juros (parcela mínima de R$ 100,00).
    - **CDC / Arrependimento**: Compras online podem ser canceladas em até 7 dias corridos após o recebimento, na embalagem original, com frete grátis coberto pela loja e estorno em até 10 dias úteis.
    - **Troca por Defeito**: Até 30 dias na loja; após isso garantia do fabricante (garantia legal de 90 dias).

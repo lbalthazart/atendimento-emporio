@@ -88,19 +88,29 @@ class SessionStore:
         session.updated_at = time.time()
         return msg
 
-    def get_messages(self, session_id: str, max_history: int = 20) -> List[Dict[str, Any]]:
-        """Retorna histórico recente formatado para consumo pela LLM."""
+    def get_messages(self, session_id: str, max_history: int = 20, include_tools: bool = False) -> List[Dict[str, Any]]:
+        """
+        Retorna histórico recente formatado para consumo pela LLM.
+        Por padrão, filtra mensagens intermediárias de ferramentas para manter o histórico
+        limpo, fluido e livre de erros de validação de mensagens 'tool' órfãs.
+        """
         session = self.get_or_create_session(session_id)
-        # Retorna as últimas N mensagens
-        recent = session.messages[-max_history:] if len(session.messages) > max_history else session.messages
+        
+        if include_tools:
+            source = session.messages
+        else:
+            # Mantém apenas as mensagens de diálogo final (user e assistant com conteúdo de texto)
+            source = [m for m in session.messages if m.role in ("user", "system") or (m.role == "assistant" and m.content)]
+
+        recent = source[-max_history:] if len(source) > max_history else source
         output = []
         for m in recent:
             item: Dict[str, Any] = {"role": m.role, "content": m.content}
-            if m.tool_calls:
+            if include_tools and m.tool_calls:
                 item["tool_calls"] = m.tool_calls
-            if m.tool_call_id:
+            if include_tools and m.tool_call_id:
                 item["tool_call_id"] = m.tool_call_id
-            if m.name:
+            if include_tools and m.name:
                 item["name"] = m.name
             output.append(item)
         return output

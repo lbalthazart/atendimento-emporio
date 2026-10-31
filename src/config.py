@@ -23,6 +23,23 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 0.2
     VISION_MODEL: str = "openai/gpt-4o-mini"
 
+    # Modelos de Contingência (Fallback automático se o primário oscilar ou falhar)
+    FALLBACK_MODELS: list[str] = [
+        "google/gemini-2.0-flash-001",
+        "meta-llama/llama-3.3-70b-instruct",
+        "anthropic/claude-3.5-haiku"
+    ]
+    VISION_FALLBACK_MODELS: list[str] = [
+        "google/gemini-2.0-flash-001"
+    ]
+
+    # Mensagem amigável padrão quando todos os provedores estiverem indisponíveis
+    DEFAULT_UNAVAILABLE_MESSAGE: str = (
+        "No momento, nosso atendimento automático está passando por uma breve instabilidade "
+        "e não foi possível processar sua mensagem. Por favor, tente novamente em instantes "
+        "ou fale diretamente com nossa equipe pelo telefone ou WhatsApp (67) 3341-4444. Agradecemos a compreensão! 🎸"
+    )
+
     # Base URL
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 

@@ -5,20 +5,49 @@ from typing import Any, Dict, List, Optional
 from src.agent.openrouter_client import OpenRouterClient, get_openrouter_client
 from src.agent.prompts import SYSTEM_PROMPT
 from src.agent.tools import TOOL_DEFINITIONS, execute_tool
+from src.config import settings
 from src.memory.session_store import SessionStore, get_session_store
 
 logger = logging.getLogger(__name__)
+
+def sanitize_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Higieniza a sequência de mensagens para garantir 100% de conformidade com as regras
+    da OpenAI/OpenRouter (evita erro 400 de mensagens 'tool' órfãs sem 'tool_calls' prévio).
+    """
+    sanitized: List[Dict[str, Any]] = []
+    
+    for msg in messages:
+        role = msg.get("role")
+        
+        # Mensagens 'tool' só podem existir se a mensagem imediatamente anterior for 'assistant' com 'tool_calls'
+        if role == "tool":
+            if not sanitized:
+                logger.warning("Descartando mensagem 'tool' no início do histórico.")
+                continue
+            prev = sanitized[-1]
+            if prev.get("role") != "assistant" or not prev.get("tool_calls"):
+                logger.warning(f"Descartando mensagem 'tool' órfã (anterior não é assistant com tool_calls): {msg}")
+                continue
+            valid_ids = [tc.get("id") for tc in prev.get("tool_calls", [])]
+            if msg.get("tool_call_id") not in valid_ids:
+                logger.warning(f"Descartando mensagem 'tool' com call_id inválido: {msg.get('tool_call_id')}")
+                continue
+
+        sanitized.append(msg)
+        
+    return sanitized
 
 class Agent:
     """
     Agente Autônomo de Atendimento da Empório da Música.
     
     Gerencia o ciclo de raciocínio ReAct / Function Calling:
-    1. Recupera histórico recente da sessão (respeitando LGPD e TTL de 7 dias).
+    1. Recupera histórico recente de diálogo (mantendo apenas mensagens de texto limpas).
     2. Envia para a LLM junto com as ferramentas disponíveis.
     3. Executa as chamadas de ferramentas solicitadas (consulta SQL / políticas).
     4. Devolve o contexto para a LLM sintetizar a resposta final natural.
-    5. Identifica necessidade de transbordo para atendimento humano.
+    5. Possui tolerância a falhas e fallbacks automáticos se o provedor oscilar.
     """
 
     def __init__(
@@ -51,8 +80,8 @@ class Agent:
         # 2. Registra a mensagem do usuário no histórico
         self.session_store.add_message(session_id, role="user", content=user_message)
 
-        # 3. Prepara a lista de mensagens para envio à LLM
-        history = self.session_store.get_messages(session_id, max_history=15)
+        # 3. Prepara histórico limpo de conversação (apenas user e assistant final)
+        history = self.session_store.get_messages(session_id, max_history=12, include_tools=False)
         messages: List[Dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}] + history
 
         tools_used: List[str] = []
@@ -61,13 +90,26 @@ class Agent:
 
         # 4. Loop de Execução de Ferramentas (ReAct / Tool Calling)
         for iteration in range(self.max_iterations):
+            # Higienização de mensagens para prevenir erros 400 da API
+            clean_messages = sanitize_messages(messages)
+
             response_msg = await self.client.chat_completion(
-                messages=messages,
+                messages=clean_messages,
                 tools=TOOL_DEFINITIONS
             )
 
             tool_calls = response_msg.get("tool_calls")
             content = response_msg.get("content")
+
+            # Se a LLM respondeu com a mensagem de contingência/indisponibilidade
+            if content == settings.DEFAULT_UNAVAILABLE_MESSAGE:
+                return {
+                    "session_id": session_id,
+                    "reply": content,
+                    "tools_used": list(set(tools_used)),
+                    "handoff_required": True,
+                    "support_message": "Instabilidade técnica em todos os provedores de IA."
+                }
 
             # Se a LLM não solicitou ferramentas, chegamos na resposta final
             if not tool_calls:
@@ -81,15 +123,8 @@ class Agent:
                     "support_message": support_note
                 }
 
-            # A LLM solicitou a execução de uma ou mais ferramentas
+            # A LLM solicitou a execução de uma ou mais ferramentas na rodada atual
             messages.append(response_msg)
-            # Salva no histórico a intenção de chamada de ferramenta
-            self.session_store.add_message(
-                session_id,
-                role="assistant",
-                content=content or "",
-                tool_calls=tool_calls
-            )
 
             for tc in tool_calls:
                 fn_name = tc.get("function", {}).get("name")
@@ -121,18 +156,11 @@ class Agent:
                     "content": result_str
                 }
                 messages.append(tool_msg)
-                self.session_store.add_message(
-                    session_id,
-                    role="tool",
-                    content=result_str,
-                    tool_call_id=call_id,
-                    name=fn_name
-                )
 
         # Se ultrapassou o limite de iterações sem resposta final
         fallback_reply = (
-            "Consultei os dados necessários, mas o sistema demorou a sintetizar a resposta. "
-            "Poderia repetir a pergunta de forma mais específica?"
+            "Consultei os dados necessários aqui na loja, mas demorou um pouco para consolidar a resposta. "
+            "Poderia me dizer especificamente qual modelo ou dúvida você gostaria de ver agora? 🎸"
         )
         self.session_store.add_message(session_id, role="assistant", content=fallback_reply)
         return {

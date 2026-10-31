@@ -32,10 +32,12 @@ POLICY_SECTIONS: Dict[str, Dict[str, Any]] = {
     },
     "formas_pagamento": {
         "title": "Formas de Pagamento e Condições de Parcelamento",
-        "keywords": ["pagamento", "pagar", "pix", "cartão", "cartao", "crédito", "credito", "débito", "debito", "parcelamento", "parcelas", "juros", "boleto", "desconto"],
+        "keywords": ["pagamento", "pagar", "pix", "chave pix", "chave", "cartão", "cartao", "crédito", "credito", "débito", "debito", "parcelamento", "parcelas", "juros", "boleto", "desconto"],
         "content": (
             "FORMAS DE PAGAMENTO ACEITAS (Presencial e Online):\n"
             "1. PIX: Pagamento à vista com 5% DE DESCONTO sobre o preço de tabela (desconto não cumulativo com produtos já em promoção).\n"
+            "   - Chave PIX Oficial da loja (CNPJ): 12.345.678/0001-90 (Titular: Empório da Música Instrumentos Musicais Ltda.).\n"
+            "   - O cliente também pode solicitar o envio de QR Code gerado no valor exato do pedido pelo WhatsApp oficial (67) 3341-4444.\n"
             "2. Cartão de Débito: Pagamento à vista, todas as bandeiras aceitas.\n"
             "3. Cartão de Crédito: Até 12x SEM JUROS. Regras de parcelamento:\n"
             "   - Até 3x sem juros (sem parcela mínima, exceto compras abaixo de R$ 50).\n"

@@ -74,3 +74,53 @@ async def test_agent_tool_calling_loop():
     assert "consultar_catalogo" in result["tools_used"]
     assert result["handoff_required"] is False
     assert mock_client.chat_completion.call_count == 2
+
+
+def test_sanitize_messages_removes_orphan_tools():
+    from src.agent.agent import sanitize_messages
+    
+    dirty_messages = [
+        {"role": "system", "content": "Prompt do sistema"},
+        {"role": "tool", "content": "resultado órfão", "tool_call_id": "call_orphan"},  # Órfã -> deve ser removida
+        {"role": "user", "content": "Olá"},
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [{"id": "call_valid", "function": {"name": "test"}}]
+        },
+        {"role": "tool", "content": "resultado válido", "tool_call_id": "call_valid"},  # Válida -> deve ser mantida
+        {"role": "assistant", "content": "Resposta final"}
+    ]
+    
+    clean = sanitize_messages(dirty_messages)
+    assert len(clean) == 5
+    assert clean[0]["role"] == "system"
+    assert clean[1]["role"] == "user"
+    assert clean[2]["role"] == "assistant"
+    assert clean[3]["role"] == "tool"
+    assert clean[4]["role"] == "assistant"
+
+@pytest.mark.asyncio
+async def test_openrouter_fallback_on_error():
+    from src.agent.openrouter_client import OpenRouterClient
+    from unittest.mock import patch, MagicMock
+    import httpx
+
+    client = OpenRouterClient(api_key="test_key")
+
+    # Simula primeira chamada falhando com HTTPStatusError e segunda tendo sucesso
+    with patch("httpx.AsyncClient.post") as mock_post:
+        resp_fail = MagicMock()
+        resp_fail.raise_for_status.side_effect = httpx.HTTPStatusError("Erro 400", request=MagicMock(), response=MagicMock(status_code=400, text="Invalid param"))
+
+        resp_ok = MagicMock()
+        resp_ok.raise_for_status.return_value = None
+        resp_ok.json.return_value = {
+            "choices": [{"message": {"role": "assistant", "content": "Resposta do modelo de contingência!"}}]
+        }
+
+        mock_post.side_effect = [resp_fail, resp_ok]
+
+        res = await client.chat_completion(messages=[{"role": "user", "content": "Teste"}])
+        assert res["content"] == "Resposta do modelo de contingência!"
+        assert mock_post.call_count == 2
