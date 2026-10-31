@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empório da Música - Atendimento ao Cliente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .message-enter { animation: fadeIn 0.25s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <!-- Header -->
+  <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-20 px-4 py-3 shadow-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl shadow-inner">
+          <i class="fa-solid fa-guitar"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+            Empório da Música
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Online</span>
+          </h1>
+          <p class="text-xs text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-location-dot text-amber-500"></i> Rua 14 de Maio, 3200 • Campo Grande/MS
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btnClear" title="Limpar conversa (LGPD)" class="text-xs text-slate-400 hover:text-rose-400 hover:bg-slate-700/50 px-2.5 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can"></i>
+          <span class="hidden sm:inline">Excluir Dados (LGPD)</span>
+        </button>
+        <a href="/docs" target="_blank" title="Swagger API Docs" class="text-xs text-slate-400 hover:text-amber-400 hover:bg-slate-700/50 px-2.5 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-code"></i>
+          <span class="hidden sm:inline">API</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Informativo -->
+  <div class="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-center text-xs text-amber-200/90">
+    <i class="fa-solid fa-clock mr-1 text-amber-400"></i>
+    Atendimento: Seg a Sex 09h às 18h | Sáb 09h às 13h • 5% de desconto à vista no PIX • Frete grátis em CG acima de R$ 500
+  </div>
+
+  <!-- Chat Container -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-between overflow-hidden">
+    
+    <!-- Mensagens -->
+    <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 scroll-smooth">
+      <!-- Mensagem Inicial de Boas-Vindas -->
+      <div class="flex items-start gap-3 message-enter">
+        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">
+          EM
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm text-slate-200 shadow-sm leading-relaxed">
+          <p>Olá! Seja muito bem-vindo à <strong>Empório da Música</strong>! 🎸</p>
+          <p class="mt-1.5">Eu sou o atendente virtual da loja. Como posso te ajudar hoje? Posso consultar nosso estoque de instrumentos, verificar preços com desconto no PIX, conferir o status do seu pedido ou tirar dúvidas sobre nossas políticas de entrega e garantia!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sugestões de Perguntas Rápidas -->
+    <div id="quickQuestions" class="py-2 flex flex-wrap gap-1.5">
+      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quais opções de violões disponíveis custando até R$1000?">
+        🎸 Violões até R$ 1.000
+      </button>
+      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Quanto custa o Takamine GD20?">
+        💰 Preço do Takamine GD20
+      </button>
+      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Qual o endereço e horário de funcionamento da loja?">
+        📍 Endereço e Horários
+      </button>
+      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Me arrependi da minha compra, posso devolver meu pedido?">
+        🔄 Devolução e Arrependimento
+      </button>
+      <button class="quick-btn text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-full transition" data-msg="Vocês vendem palhetas e cabos?">
+        🚫 Venda de Acessórios
+      </button>
+    </div>
+
+    <!-- Input Box -->
+    <div class="mt-2 bg-slate-800 border border-slate-700 rounded-2xl p-2 shadow-lg">
+      <form id="chatForm" class="flex items-center gap-2">
+        <input 
+          id="messageInput" 
+          type="text" 
+          placeholder="Digite sua mensagem sobre instrumentos, pedidos ou dúvidas..." 
+          class="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none"
+          autocomplete="off"
+        />
+
+        <!-- Botão Enviar Imagem -->
+        <label for="imageUpload" title="Enviar foto de instrumento" class="cursor-pointer text-slate-400 hover:text-amber-400 p-2 transition">
+          <i class="fa-solid fa-camera"></i>
+          <input type="file" id="imageUpload" accept="image/*" class="hidden">
+        </label>
+
+        <!-- Botão de Enviar -->
+        <button 
+          type="submit" 
+          id="btnSubmit" 
+          class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-1.5 shadow"
+        >
+          <span>Enviar</span>
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-2 text-center text-[11px] text-slate-400 flex items-center justify-center gap-2">
+      <span><i class="fa-solid fa-shield-halved text-emerald-400"></i> Conformidade LGPD: histórico retido por 7 dias</span>
+      <span>•</span>
+      <span>Alimentado por OpenRouter</span>
+    </div>
+  </main>
+
+  <script>
+    const chatBox = document.getElementById('chatBox');
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnClear = document.getElementById('btnClear');
+    const imageUpload = document.getElementById('imageUpload');
+
+    // Recupera ou cria session_id persistido no localStorage
+    let sessionId = localStorage.getItem('emporio_session_id');
+    if (!sessionId) {
+      sessionId = 'web_' + Math.random().toString(36).substring(2, 12);
+      localStorage.setItem('emporio_session_id', sessionId);
+    }
+
+    function appendMessage(role, text, toolsUsed = []) {
+      const isUser = role === 'user';
+      const container = document.createElement('div');
+      container.className = `flex items-start gap-3 message-enter ${isUser ? 'flex-row-reverse' : ''}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = `w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0 text-sm ${
+        isUser ? 'bg-indigo-600 text-white' : 'bg-amber-500 text-slate-900'
+      }`;
+      avatar.innerText = isUser ? 'EU' : 'EM';
+
+      const contentBox = document.createElement('div');
+      contentBox.className = `max-w-[85%] text-sm rounded-2xl p-3.5 shadow-sm leading-relaxed ${
+        isUser 
+          ? 'bg-indigo-600/90 text-white rounded-tr-none' 
+          : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-tl-none'
+      }`;
+
+      // Formatação simples de parágrafos
+      const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+      paragraphs.forEach((p, idx) => {
+        const pElem = document.createElement('p');
+        if (idx > 0) pElem.className = 'mt-1.5';
+        pElem.innerText = p;
+        contentBox.appendChild(pElem);
+      });
+
+      // Se utilizou ferramentas, exibe badge informativo
+      if (toolsUsed && toolsUsed.length > 0) {
+        const toolsDiv = document.createElement('div');
+        toolsDiv.className = 'mt-2 pt-2 border-t border-slate-700/60 flex items-center gap-1.5 flex-wrap';
+        toolsUsed.forEach(tool => {
+          const badge = document.createElement('span');
+          badge.className = 'text-[10px] bg-slate-900/60 border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1';
+          badge.innerHTML = `<i class="fa-solid fa-wrench text-[8px]"></i> ${tool}`;
+          toolsDiv.appendChild(badge);
+        });
+        contentBox.appendChild(toolsDiv);
+      }
+
+      container.appendChild(avatar);
+      container.appendChild(contentBox);
+      chatBox.appendChild(container);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendTyping() {
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'typingIndicator';
+      typingDiv.className = 'flex items-start gap-3 message-enter';
+      typingDiv.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900 font-bold shrink-0 text-sm">EM</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-sm text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-circle-notch fa-spin text-amber-400 text-xs"></i>
+          <span>Consultando informações da Empório da Música...</span>
+        </div>
+      `;
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typing = document.getElementById('typingIndicator');
+      if (typing) typing.remove();
+    }
+
+    async function sendMessage(text) {
+      if (!text || text.trim() === '') return;
+      appendMessage('user', text);
+      messageInput.value = '';
+      btnSubmit.disabled = true;
+      appendTyping();
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, message: text })
+        });
+        const data = await response.json();
+        removeTyping();
+        appendMessage('assistant', data.reply, data.tools_used);
+      } catch (err) {
+        removeTyping();
+        appendMessage('assistant', 'Desculpe, ocorreu um erro de conexão com o servidor. Verifique se o backend está em execução.');
+      } finally {
+        btnSubmit.disabled = false;
+        messageInput.focus();
+      }
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendMessage(messageInput.value);
+    });
+
+    // Botões de perguntas rápidas
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sendMessage(btn.getAttribute('data-msg'));
+      });
+    });
+
+    // Exclusão de dados / Direito ao esquecimento
+    btnClear.addEventListener('click', async () => {
+      if (!confirm('Deseja realmente apagar todos os dados desta conversa conforme a LGPD?')) return;
+      try {
+        await fetch(`/api/history/${sessionId}`, { method: 'DELETE' });
+        localStorage.removeItem('emporio_session_id');
+        location.reload();
+      } catch (e) {
+        alert('Erro ao excluir dados.');
+      }
+    });
+
+    // Envio de imagem
+    imageUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('session_id', sessionId);
+      formData.append('message', 'Por favor, avalie a imagem deste instrumento.');
+
+      appendMessage('user', `[Foto enviada: ${file.name}]`);
+      appendTyping();
+
+      try {
+        const res = await fetch('/api/media', { method: 'POST', body: formData });
+        const data = await res.json();
+        removeTyping();
+        appendMessage('assistant', data.reply, data.tools_used);
+      } catch (err) {
+        removeTyping();
+        appendMessage('assistant', 'Erro ao processar imagem.');
+      }
+    });
+  </script>
+</body>
+</html>
