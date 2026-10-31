@@ -86,15 +86,71 @@ O sistema adota uma abordagem modular baseada em **Function Calling / Tool Use n
 
 ## 💡 Justificativa das Decisões Técnicas
 
-| Decisão | Escolha | Justificativa |
-|---|---|---|
-| **Linguagem Principal** | Python 3.12+ | Restrição técnica mandatória; ecossistema maduro para IAs, tipagem estática moderna e bibliotecas assíncronas de alta performance. |
-| **Framework do Agente** | Python Nativo + Tool Calling | Optou-se por **não** usar frameworks pesados (como LangChain complexo ou CrewAI) para manter controle total sobre o loop de raciocínio, facilidade de depuração, transparência do código e performance superior. |
-| **Provedor e Modelo LLM** | OpenRouter (`openai/gpt-4o-mini`) | Permite usar os melhores modelos do mercado sob **uma única chave de API**, oferecendo altíssima fidelidade a chamadas de ferramentas (*tool calling*), velocidade e suporte multimodal nativo. Não usamos modelos locais devido à latência e requisitos proibitivos de hardware. |
-| **Camada de Dados** | SQLite Indexado em Memória/Disco | Dados tabulares (preço, estoque, status) devem ser exatos. Consultar CSVs via SQL estruturado elimina alucinações numéricas e garante consultas como *"violões abaixo de R$ 1000"* com 100% de precisão. |
-| **Retrieval de Políticas** | Indexação Semântica / Textual | O manual de políticas possui regras contratuais e do CDC. A busca estruturada por tópicos garante que prazos (7 dias arrependimento, 30 dias defeito) sejam aplicados com fidelidade jurídica. |
-| **Prompt Engineering** | *Prompt Shield* & *Few-shot System Prompt* | Delimitação estrita do papel do assistente, instruções inegociáveis de segurança contra *prompt injection* / *jailbreak*, e proibição explícita de inventar informações ausentes. |
+Abaixo detalham-se as justificativas aprofundadas para cada um dos eixos arquiteturais solicitados no desafio:
 
+| Eixo Arquitetural | Escolha | Justificativa Sintética |
+|---|---|---|
+| **1. Framework** | FastAPI (Python 3.12) + ReAct Nativo | Alto throughput assíncrono, documentação OpenAPI automática, zero acoplamento com bibliotecas inchadas (LangChain/CrewAI) e controle total do ciclo de vida das mensagens. |
+| **2. Abordagem** | ReAct com *Function Calling* Estrito | Separação rígida entre cognição (LLM) e dados factuais (SQL/Regras). Elimina alucinações de preço, estoque e prazos legais do CDC. |
+| **3. Modelo e Provedor** | OpenRouter (`gpt-4o-mini` + Multi-Fallback) | Chave unificada para múltiplos provedores (OpenAI, Google, Meta, Anthropic), latência sub-segundo, baixo custo e mitigação de lock-in ou rate limits. |
+| **4. Interface Híbrida** | Web Chat Integrado + API RESTful | Permite avaliação imediata no navegador (sem dependências de Node.js/npm) e integração plug-and-play com bots de WhatsApp (Evolution API, Z-API, n8n). |
+| **5. Persistência & LGPD** | Memória em Sessão com TTL de 7 Dias | Conformidade estrita com a LGPD (Lei 13.709/2018); expurgo automático de conversas após 7 dias e endpoint de exclusão sob demanda. |
+| **6. Tratamento de Dados** | SQLite Indexado + Parser de Políticas | Consultas SQL de milissegundo a partir dos CSVs brutos e recuperação por seções normativas do manual em PDF. |
+
+---
+
+### 1. Framework: FastAPI + Python Nativo vs. LangChain / CrewAI
+- **Por que FastAPI?**
+  - **Alta Performance Assíncrona**: Suporte nativo a `async/await` com ASGI (`uvicorn`), essencial para lidar com requisições I/O-bound (chamadas de rede para APIs de IA, streams e webhooks de mensageria).
+  - **Validação com Pydantic v2**: Contratos de entrada e saída rigorosamente tipados, garantindo que payloads de chat ou transbordo humano sejam validados em nível de schema antes de atingir o agente.
+  - **Documentação Automática**: Geração em tempo real de especificações OpenAPI e Swagger UI interativo (`/docs`).
+- **Por que Python Nativo em vez de LangChain ou CrewAI?**
+  - Frameworks de agente de alto nível frequentemente introduzem camadas desnecessárias de abstração (*black boxes*), prompts internos opacos, dependências pesadas e quebras de contrato entre versões menores.
+  - Implementar o orquestrador ReAct de forma nativa permitiu:
+    - Controle milimétrico sobre a higienização de mensagens (`sanitize_messages`) evitando erros 400 de *orphan tool calls*.
+    - Depuração facilitada e transparente através de logs estruturados.
+    - Menor pegada de memória do container Docker e inicialização ultrarrápida (sub-segundo).
+
+### 2. Abordagem: ReAct com Function Calling Nativo vs. RAG Ingênuo
+- **O Risco do RAG Ingênuo de Texto Puro**:
+  - Injetar catálogos inteiros em texto plano no contexto da LLM causa alucinações numéricas graves (preços inventados, modelos trocados, promoções vencidas) e estouro da janela de contexto.
+- **A Solução Adotada (ReAct + Tool Calling)**:
+  - O agente atua como um **orquestrador cognitivo**: ele interpreta a intenção do cliente, extrai parâmetros (ex: termo de busca, teto de preço, categoria) e delega a busca a funções Python determinísticas (`consultar_catalogo`, `consultar_detalhes_produto`, `consultar_status_pedido`, `consultar_politicas`).
+  - O modelo apenas sintetiza em linguagem natural a resposta factual retornada pela ferramenta, garantindo **fidelidade matemática e comercial absoluta**.
+
+### 3. Modelo e Provedor: OpenRouter com Fallbacks Automáticos
+- **Por que OpenRouter?**
+  - Provedores diretos únicos criam dependência de fornecedor (*vendor lock-in*). Caso a OpenAI ou Anthropic sofram instabilidade temporária, o atendimento da loja é interrompido.
+  - O OpenRouter unifica OpenAI, Google, Anthropic e Meta sob um mesmo endpoint compatível com o padrão OpenAI, permitindo roteamento inteligente e contingência instantânea.
+- **Por que `openai/gpt-4o-mini` como Modelo Primário?**
+  - Excelente custo-benefício (fração do custo de modelos frontier como GPT-4o ou Claude 3.5 Sonnet).
+  - Fidelidade superior na geração de chamadas de função JSON (*tool calling*).
+  - Latência de primeiro token (TTFT) extremamente baixa, crucial para chats síncronos.
+- **Por que não Modelos Locais (Ollama / vLLM)?**
+  - Modelos locais de 70B+ parâmetros exigem instâncias com GPUs caras (A10G/A100) com custo fixo elevado para uma loja regional, enquanto modelos menores (ex: 7B/8B) apresentam falhas frequentes ao invocar ferramentas estruturadas com múltiplos argumentos. O OpenRouter combina custo sob demanda com performance topo de linha.
+
+### 4. Interface de Interação Híbrida: Web Chat Embutido + API REST
+- **Acesso Imediato via Web Chat (`GET /`)**:
+  - A aplicação entrega uma interface moderna em HTML5, Tailwind CSS e `marked.js` servida diretamente pelo FastAPI. Isso elimina a necessidade de instalar Node.js, npm ou rodar múltiplos terminais durante a avaliação ou demonstração para clientes.
+  - A interface conta com fila de digitação com indicador visual de debounce e layout ancorado sem quebra de scroll.
+- **API REST Omnichannel (`POST /api/chat`, `POST /api/media`)**:
+  - A mesma lógica que alimenta a web atende qualquer plataforma externa de mensageria (WhatsApp via Evolution API / Z-API / Baileys, Instagram Direct, Telegram ou fluxos n8n). Basta enviar um JSON contendo `session_id` e `message`.
+
+### 5. Persistência do Histórico e Conformidade LGPD
+- **Memória de Sessão com TTL de 7 Dias**:
+  - Em conformidade com a **Lei Geral de Proteção de Dados (Lei nº 13.709/2018)**, dados conversacionais e dados pessoais consultados para pedidos (e-mail, telefone) não devem residir indefinidamente no sistema.
+  - A classe `SessionStore` implementa purga automática de qualquer sessão cuja última mensagem tenha ocorrido há mais de **604.800 segundos (7 dias)**.
+- **Direito ao Esquecimento (Art. 18 LGPD)**:
+  - Disponibilizado o endpoint `DELETE /api/history/{session_id}` e um botão visual de 'Limpar Conversa' no chat para exclusão definitiva imediata sob requisição do titular.
+- **Arquitetura Desacoplada**:
+  - O armazenamento reside em memória com interface desacoplada, pronta para substituição transparente por Redis ou Memcached em clusters distribuídos de alta escala.
+
+### 6. Tratamento e Ingestão de Dados: CSVs em SQLite + Parser de PDF
+- **Ingestão Estruturada dos CSVs**:
+  - Durante a inicialização da aplicação, os 6 arquivos CSV fornecidos (`products.csv`, `categories.csv`, `orders.csv`, `order_items.csv`, `promotions.csv`, `customers.csv`) são automaticamente sanitizados, convertidos para tipos fortes (floats de preço, inteiros de estoque, datas ISO) e carregados em um banco SQLite indexado.
+  - Índices dedicados em `products(category_id)`, `products(price)`, `products(stock)` e `orders(order_id)` garantem consultas instantâneas e sem overhead de I/O em disco.
+- **Parser Segmentado de Políticas**:
+  - O arquivo `políticas_da_loja.pdf` é processado na inicialização e particionado em seções normativas canônicas (Arrependimento CDC de 7 dias, Defeito de 30 dias, Garantia legal de 90 dias, Fretes e Horários). Dessa forma, a ferramenta `consultar_politicas` recupera o parágrafo exato aplicável à dúvida jurídica do cliente sem ruídos de formatação.
 ---
 
 ## 🛡️ Mecanismos de Resiliência, Fila e Segurança
