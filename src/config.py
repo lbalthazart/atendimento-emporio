@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     HISTORY_TTL_DAYS: int = 7
     MESSAGE_BUFFER_SECONDS: float = 3.0
 
+    # Segurança e Autenticação (JWT / API Key / Rate Limiting)
+    API_SECRET_KEY: str = ""
+    JWT_SECRET_KEY: str = "emporio-da-musica-secret-jwt-key-2026"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRATION_HOURS: int = 24
+    RATE_LIMIT_PER_MINUTE: int = 60
+
     # Banco de Dados
     DATABASE_PATH: Path = BASE_DIR / "data" / "emporio.sqlite3"
 

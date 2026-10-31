@@ -38,6 +38,15 @@ TOOL_DEFINITIONS: List[Dict[str, Any]] = [
                     "apenas_em_estoque": {
                         "type": "boolean",
                         "description": "Se verdadeiro, filtra apenas itens com estoque > 0. Padrão: true."
+                    },
+                    "ordenar_por": {
+                        "type": "string",
+                        "enum": ["preco_asc", "preco_desc"],
+                        "description": "Critério de ordenação: 'preco_desc' para buscar os instrumentos mais caros / topo de linha da loja. 'preco_asc' para os mais baratos. Padrão: 'preco_asc'."
+                    },
+                    "limite": {
+                        "type": "integer",
+                        "description": "Quantidade máxima de produtos retornados (padrão: 6, máximo: 12)."
                     }
                 }
             }
@@ -131,12 +140,18 @@ def execute_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
             min_p = arguments.get("preco_minimo")
             estoque = arguments.get("apenas_em_estoque", True)
 
+            ordem = arguments.get("ordenar_por", "preco_asc")
+            sort_order = "price_desc" if ordem == "preco_desc" else "price_asc"
+            limite = min(int(arguments.get("limite", 6)), 12)
+
             results = search_products(
                 query=termo,
                 category=categoria,
                 max_price=max_p,
                 min_price=min_p,
-                in_stock_only=estoque
+                in_stock_only=estoque,
+                sort_by=sort_order,
+                limit=limite
             )
             return {
                 "total_encontrado": len(results),

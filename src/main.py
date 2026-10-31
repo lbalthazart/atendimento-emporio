@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import uuid
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -15,6 +15,7 @@ from src.agent.openrouter_client import get_openrouter_client
 from src.config import BASE_DIR, settings
 from src.database.loader import init_database
 from src.memory.session_store import get_session_store
+from src.security import verify_api_security, create_access_token
 
 # Configuração de logs
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -45,6 +46,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Middleware de Cabeçalhos de Segurança (OWASP)
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 # Templates
 templates_dir = BASE_DIR / "src" / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
@@ -70,7 +81,7 @@ async def home(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(payload: ChatRequest):
+async def chat_endpoint(payload: ChatRequest, _authorized: bool = Depends(verify_api_security)):
     """
     Endpoint principal de envio de mensagens para o Agente.
     Compatível com integrações de sites, WhatsApp (Evolution API, Z-API) e bots omnichannel.
@@ -178,6 +189,44 @@ async def delete_history(session_id: str):
         "session_id": session_id,
         "deleted": deleted,
         "message": "Dados de atendimento expurgados com sucesso conforme a LGPD." if deleted else "Sessão não encontrada ou já expirada."
+    }
+
+class TokenRequest(BaseModel):
+    client_id: str = Field(..., description="ID da aplicação, bot do WhatsApp ou sessão")
+    secret_key: Optional[str] = Field(None, description="Chave mestra da API (se configurada no servidor)")
+
+@app.post("/api/auth/token")
+async def issue_token(payload: TokenRequest):
+    """Emite um token JWT de segurança para bots de mensageria e integrações externas."""
+    if settings.API_SECRET_KEY and payload.secret_key != settings.API_SECRET_KEY:
+        raise HTTPException(status_code=401, detail="Chave secreta de autenticação inválida.")
+    token = create_access_token(data={"sub": payload.client_id})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in_hours": settings.JWT_EXPIRATION_HOURS
+    }
+
+@app.get("/api/security/policies")
+async def security_policies():
+    """Declaração pública de conformidade LGPD, segurança e política de cookies."""
+    return {
+        "lgpd_compliance": True,
+        "data_retention_ttl_days": settings.HISTORY_TTL_DAYS,
+        "right_to_be_forgotten": True,
+        "rate_limit_per_minute": settings.RATE_LIMIT_PER_MINUTE,
+        "cookie_policy": {
+            "essential_storage_only": True,
+            "tracking_cookies": False,
+            "storage_type": "localStorage (apenas session_id e consentimento)"
+        },
+        "store_info": {
+            "name": "Empório da Música",
+            "city": "Campo Grande - MS",
+            "address": "Rua 14 de Maio, 3200",
+            "phone": "(67) 3341-4444",
+            "whatsapp": "(67) 3321-4500"
+        }
     }
 
 @app.get("/health")

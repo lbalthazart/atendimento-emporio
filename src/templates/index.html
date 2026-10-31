@@ -7,9 +7,69 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">    // Controle do Banner de Cookies e Modal LGPD
+    const cookieBanner = document.getElementById('cookieBanner');
+    const btnAcceptCookies = document.getElementById('btnAcceptCookies');
+    const btnOpenPrivacyModal = document.getElementById('btnOpenPrivacyModal');
+    const privacyModal = document.getElementById('privacyModal');
+    const btnClosePrivacyModal = document.getElementById('btnClosePrivacyModal');
+    const btnDismissModal = document.getElementById('btnDismissModal');
+
+    if (!localStorage.getItem('emporio_cookie_accepted')) {
+      setTimeout(() => {
+        cookieBanner.classList.remove('hidden');
+      }, 800);
+    }
+
+    btnAcceptCookies.addEventListener('click', () => {
+      localStorage.setItem('emporio_cookie_accepted', 'true');
+      cookieBanner.classList.add('hidden');
+    });
+
+    function togglePrivacyModal(show) {
+      if (show) {
+        privacyModal.classList.remove('hidden');
+      } else {
+        privacyModal.classList.add('hidden');
+      }
+    }
+
+    btnOpenPrivacyModal.addEventListener('click', () => togglePrivacyModal(true));
+    btnClosePrivacyModal.addEventListener('click', () => togglePrivacyModal(false));
+    btnDismissModal.addEventListener('click', () => togglePrivacyModal(false));
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">    // Controle do Banner de Cookies e Modal LGPD
+    const cookieBanner = document.getElementById('cookieBanner');
+    const btnAcceptCookies = document.getElementById('btnAcceptCookies');
+    const btnOpenPrivacyModal = document.getElementById('btnOpenPrivacyModal');
+    const privacyModal = document.getElementById('privacyModal');
+    const btnClosePrivacyModal = document.getElementById('btnClosePrivacyModal');
+    const btnDismissModal = document.getElementById('btnDismissModal');
+
+    if (!localStorage.getItem('emporio_cookie_accepted')) {
+      setTimeout(() => {
+        cookieBanner.classList.remove('hidden');
+      }, 800);
+    }
+
+    btnAcceptCookies.addEventListener('click', () => {
+      localStorage.setItem('emporio_cookie_accepted', 'true');
+      cookieBanner.classList.add('hidden');
+    });
+
+    function togglePrivacyModal(show) {
+      if (show) {
+        privacyModal.classList.remove('hidden');
+      } else {
+        privacyModal.classList.add('hidden');
+      }
+    }
+
+    btnOpenPrivacyModal.addEventListener('click', () => togglePrivacyModal(true));
+    btnClosePrivacyModal.addEventListener('click', () => togglePrivacyModal(false));
+    btnDismissModal.addEventListener('click', () => togglePrivacyModal(false));
+  </script>
 
   <style>
     body {
@@ -287,12 +347,12 @@
     function appendMessage(role, text, toolsUsed = []) {
       const isUser = role === 'user';
       const container = document.createElement('div');
-      container.className = `flex items-end gap-2.5 message-enter ${isUser ? 'justify-end' : 'justify-start'}`;
+      container.className = `flex items-start gap-2.5 message-enter ${isUser ? 'justify-end' : 'justify-start'}`;
 
       if (!isUser) {
-        // Avatar do consultor
+        // Avatar alinhado ao topo da bolha
         const avatar = document.createElement('div');
-        avatar.className = 'w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs shrink-0 mb-1';
+        avatar.className = 'w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs shrink-0 mt-0.5';
         avatar.innerHTML = '<i class="fa-solid fa-guitar text-[10px]"></i>';
         container.appendChild(avatar);
       }
@@ -303,8 +363,8 @@
       const contentBox = document.createElement('div');
       contentBox.className = `text-sm px-4 py-3 leading-relaxed shadow-sm ${
         isUser 
-          ? 'bg-[#2563eb] text-white rounded-2xl rounded-br-none' 
-          : 'bg-[#1c1e24] border border-slate-800 text-slate-200 rounded-2xl rounded-bl-none chat-prose'
+          ? 'bg-[#2563eb] text-white rounded-2xl rounded-tr-none' 
+          : 'bg-[#1c1e24] border border-slate-800 text-slate-200 rounded-2xl rounded-tl-none chat-prose'
       }`;
 
       if (isUser) {
@@ -313,10 +373,12 @@
         contentBox.innerHTML = window.marked ? marked.parse(text) : text.replace(/\n/g, '<br>');
       }
 
-      // Rodapé com horário e status de entrega
+      // Rodapé interno com horário elegante
       const metaDiv = document.createElement('div');
-      metaDiv.className = `text-[10px] mt-1 flex items-center gap-1 ${isUser ? 'justify-end text-slate-400' : 'text-slate-500'}`;
-      metaDiv.innerHTML = `<span>${getCurrentTime()}</span>` + (isUser ? ' <i class="fa-solid fa-check-double text-sky-400 text-[10px]"></i>' : '');
+      metaDiv.className = `text-[10px] mt-1.5 pt-1 flex items-center gap-1 border-t ${
+        isUser ? 'justify-end text-blue-200/80 border-blue-400/20' : 'justify-end text-slate-500 border-slate-800/80'
+      }`;
+      metaDiv.innerHTML = `<span>${getCurrentTime()}</span>` + (isUser ? ' <i class="fa-solid fa-check-double text-white/90 text-[10px]"></i>' : '');
 
       // Badges técnicos de ferramentas (visíveis se o Modo Inspetor estiver ativado)
       if (toolsUsed && toolsUsed.length > 0) {
@@ -502,6 +564,92 @@
         alert('Erro ao excluir histórico.');
       }
     });
+      // Controle do Banner de Cookies e Modal LGPD
+    const cookieBanner = document.getElementById('cookieBanner');
+    const btnAcceptCookies = document.getElementById('btnAcceptCookies');
+    const btnOpenPrivacyModal = document.getElementById('btnOpenPrivacyModal');
+    const privacyModal = document.getElementById('privacyModal');
+    const btnClosePrivacyModal = document.getElementById('btnClosePrivacyModal');
+    const btnDismissModal = document.getElementById('btnDismissModal');
+
+    if (!localStorage.getItem('emporio_cookie_accepted')) {
+      setTimeout(() => {
+        cookieBanner.classList.remove('hidden');
+      }, 800);
+    }
+
+    btnAcceptCookies.addEventListener('click', () => {
+      localStorage.setItem('emporio_cookie_accepted', 'true');
+      cookieBanner.classList.add('hidden');
+    });
+
+    function togglePrivacyModal(show) {
+      if (show) {
+        privacyModal.classList.remove('hidden');
+      } else {
+        privacyModal.classList.add('hidden');
+      }
+    }
+
+    btnOpenPrivacyModal.addEventListener('click', () => togglePrivacyModal(true));
+    btnClosePrivacyModal.addEventListener('click', () => togglePrivacyModal(false));
+    btnDismissModal.addEventListener('click', () => togglePrivacyModal(false));
   </script>
+  <!-- Banner Flutuante de Cookies e LGPD -->
+  <div id="cookieBanner" class="hidden fixed bottom-4 left-4 right-4 max-w-xl mx-auto bg-[#181a20]/98 border border-amber-500/40 rounded-2xl p-4 shadow-2xl z-50 backdrop-blur-md">
+    <div class="flex items-start gap-3">
+      <div class="text-2xl mt-0.5">🍪</div>
+      <div class="flex-1 text-xs text-slate-300 leading-relaxed">
+        <strong class="text-white block font-semibold mb-0.5">Privacidade, Cookies & LGPD</strong>
+        Utilizamos armazenamento local exclusivamente para manter sua sessão de atendimento ativa e suas preferências de instrumentos. Seus dados são retidos por no máximo 7 dias conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018).
+      </div>
+    </div>
+    <div class="mt-3 flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+      <button id="btnOpenPrivacyModal" class="text-xs text-slate-400 hover:text-amber-400 px-3 py-1.5 transition">
+        Ver Detalhes
+      </button>
+      <button id="btnAcceptCookies" class="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-1.5 rounded-xl transition shadow">
+        Entendi e Aceitar
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Políticas de Privacidade e Segurança -->
+  <div id="privacyModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#181a20] border border-slate-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-amber-400 text-lg"></i>
+          <h3 class="font-bold text-white text-base">Políticas de Segurança e LGPD</h3>
+        </div>
+        <button id="btnClosePrivacyModal" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-300 space-y-3 leading-relaxed max-h-80 overflow-y-auto pr-1">
+        <div class="bg-[#121317] p-3 rounded-xl border border-slate-800">
+          <p class="font-semibold text-amber-300 mb-1">🔒 Armazenamento e Retenção (Art. 15 e 16)</p>
+          <p>Todas as conversas e sessões são protegidas com expurgo automático após <strong>7 dias (TTL de 604.800 segundos)</strong>. Nenhum dado é vendido ou compartilhado com terceiros.</p>
+        </div>
+
+        <div class="bg-[#121317] p-3 rounded-xl border border-slate-800">
+          <p class="font-semibold text-amber-300 mb-1">🗑️ Direito ao Esquecimento (Art. 18)</p>
+          <p>Você pode solicitar a exclusão imediata e definitiva de todo o histórico da conversa a qualquer momento clicando no botão <strong>Limpar</strong> no topo da página ou via rota REST <code>DELETE /api/history/{session_id}</code>.</p>
+        </div>
+
+        <div class="bg-[#121317] p-3 rounded-xl border border-slate-800">
+          <p class="font-semibold text-amber-300 mb-1">🍪 Política de Cookies</p>
+          <p>Não usamos cookies de terceiros para publicidade ou rastreamento. O armazenamento local (<code>localStorage</code>) é estritamente técnico e essencial para o funcionamento contínuo do chat de atendimento.</p>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnDismissModal" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

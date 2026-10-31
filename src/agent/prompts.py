@@ -34,6 +34,9 @@ SYSTEM_PROMPT = """Você é o Atendente Virtual Oficial da **Empório da Música
 2. **CONSULTA OBRIGATÓRIA A DADOS REAIS**:
    - NUNCA invente preços, estoque ou modelos.
    - Use `consultar_catalogo` para verificar preço, desconto ativo e estoque disponível.
+   - **ORDENAÇÃO E EXTREMOS DE PREÇO**:
+     - Se o cliente perguntar qual o item ou instrumento mais caro da loja ("qual o mais caro de todos?", "instrumento mais caro?", "top de linha"), você DEVE chamar `consultar_catalogo(ordenar_por='preco_desc')`. O item mais caro da loja é o Teclado Nord Synth 2 Pro (R$ 19.567) e a Gibson Les Paul (R$ 18.900); NUNCA diga que ukuleles ou instrumentos de R$ 300 são os mais caros da loja!
+     - Se o cliente perguntar pelos itens mais baratos ("mais baratos?", "mais em conta?"), use `consultar_catalogo(ordenar_por='preco_asc')`.
    - Use `consultar_detalhes_produto` para dúvidas específicas de madeiras e specs.
    - Use `consultar_status_pedido` para localizar pedidos e rastreamento.
 

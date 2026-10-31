@@ -195,9 +195,19 @@ Provedores rigorosos de Tool Calling (como OpenAI e Anthropic via OpenRouter) ex
   - A função `sanitize_messages` varre todas as mensagens antes do envio e expurga preventivamente qualquer chamada de ferramenta incompleta ou fora de ordem.
 
 ### 5. Grounding Rigoroso e Zero Alucinação
-- **Dados Numéricos**: Preços, estoque e promoções vêm exclusivamente de consultas SQL ao banco de dados estruturado derivado dos CSVs.
+- **Dados Numéricos**: Preços, estoque e promoções vêm exclusivamente de consultas SQL ao banco de dados estruturado derivado dos CSVs. Suporte a ordenação de preço (`preco_desc` e `preco_asc`) garantindo que perguntas sobre o produto mais caro tragam o topo da linha (Teclado Nord Synth 2 Pro e Gibson Les Paul) e não instrumentos baratos.
 - **Regras Contratuais**: Prazos de devolução pelo CDC (7 dias corridos sem custo de frete), garantia de 90 dias e regras de frete vêm do manual oficial em PDF.
 - **Não Invenção de Chaves ou Dados Ausentes**: Como o manual de políticas não define uma chave PIX fixa, o agente **não alucina** uma chave inventada; ele esclarece com transparência que a chave ou QR Code oficial para pagamento com os 5% de desconto é gerado pela equipe no momento do fechamento da compra pelo WhatsApp oficial da loja (`(67) 3321-4500` ou `(67) 3341-4444`).
+
+### 6. Autenticação de API: Bearer JWT & API Key
+- **Proteção de Endpoints**: Suporte nativo a autenticação com tokens **Bearer JWT** (assinados com algoritmo HS256) ou chave de cabeçalho `X-API-Key`.
+- **Emissão Dinâmica de Tokens**: Rota `POST /api/auth/token` para conceder acesso temporário seguro a bots de WhatsApp (Evolution API, Z-API) e sistemas de CRM.
+- **Ambiente de Desenvolvimento Livre**: Se a variável `API_SECRET_KEY` não for definida no `.env`, o sistema opera em modo aberto facilitando testes locais e avaliações rápidas.
+
+### 7. Blindagem OWASP, Rate Limiting & Política de Cookies (LGPD)
+- **Cabeçalhos de Segurança HTTP**: Middleware ativo em todas as rotas injetando cabeçalhos de defesa: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block` e `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Limitador de Taxa (Rate Limiter)**: Proteção em memória contra ataques de força bruta, spam de requisições e consumo excessivo de créditos de IA (teto padrão de 60 requisições/minuto por cliente).
+- **Banner de Consentimento & Modal de Privacidade**: Interface Web com aviso transparente de cookies estritamente técnicos (armazenamento local) e modal com os direitos do titular sob a LGPD (Lei 13.709/2018).
 
 ---
 
@@ -288,6 +298,8 @@ A aplicação disponibiliza uma **interface gráfica moderna de chat** embutida 
 | `GET` | `/` | Interface Web de Chat interativo com suporte a fila inteligente |
 | `POST` | `/api/chat` | Envio de mensagem de texto com histórico e suporte a debounce |
 | `POST` | `/api/media` | Envio de áudio (transcrição) ou imagem (análise visual de instrumentos) |
+| `POST` | `/api/auth/token` | Emissão de token JWT assinado para integrações seguras (WhatsApp / CRM) |
+| `GET` | `/api/security/policies` | Declaração pública de conformidade LGPD, rate limiting e política de cookies |
 | `GET` | `/api/history/{session_id}` | Consulta do histórico ativo da sessão (respeitando o TTL de 7 dias) |
 | `DELETE` | `/api/history/{session_id}` | Exclusão imediata dos dados da conversa (Direito ao Esquecimento - LGPD) |
 | `GET` | `/health` | Checagem de integridade do serviço e conexão com OpenRouter |

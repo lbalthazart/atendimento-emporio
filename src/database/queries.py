@@ -19,6 +19,7 @@ def search_products(
     max_price: Optional[float] = None,
     min_price: Optional[float] = None,
     in_stock_only: bool = True,
+    sort_by: str = "price_asc",
     limit: int = 6
 ) -> List[Dict[str, Any]]:
     """
@@ -68,7 +69,12 @@ def search_products(
                 sql += " AND (LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(c.name) LIKE ?)"
                 params.extend([f"%{kw}%", f"%{kw}%", f"%{kw}%"])
 
-        sql += " ORDER BY p.price_brl ASC LIMIT ?;"
+        if sort_by == "price_desc":
+            sql += " ORDER BY p.price_brl DESC LIMIT ?;"
+        elif sort_by == "name_asc":
+            sql += " ORDER BY p.name ASC LIMIT ?;"
+        else:
+            sql += " ORDER BY p.price_brl ASC LIMIT ?;"
         params.append(limit)
 
         cursor = conn.execute(sql, params)
