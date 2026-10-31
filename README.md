@@ -200,14 +200,49 @@ Provedores rigorosos de Tool Calling (como OpenAI e Anthropic via OpenRouter) ex
 - **Não Invenção de Chaves ou Dados Ausentes**: Como o manual de políticas não define uma chave PIX fixa, o agente **não alucina** uma chave inventada; ele esclarece com transparência que a chave ou QR Code oficial para pagamento com os 5% de desconto é gerado pela equipe no momento do fechamento da compra pelo WhatsApp oficial da loja (`(67) 3321-4500` ou `(67) 3341-4444`).
 
 ### 6. Autenticação de API: Bearer JWT & API Key
-- **Proteção de Endpoints**: Suporte nativo a autenticação com tokens **Bearer JWT** (assinados com algoritmo HS256) ou chave de cabeçalho `X-API-Key`.
-- **Emissão Dinâmica de Tokens**: Rota `POST /api/auth/token` para conceder acesso temporário seguro a bots de WhatsApp (Evolution API, Z-API) e sistemas de CRM.
-- **Ambiente de Desenvolvimento Livre**: Se a variável `API_SECRET_KEY` não for definida no `.env`, o sistema opera em modo aberto facilitando testes locais e avaliações rápidas.
+Para proteger o backend contra acessos não autorizados, consumo indevido de créditos de IA e scraping de catálogo, a API disponibiliza uma camada de segurança robusta implementada em `src/security.py`:
+
+- **Arquitetura de Segurança Híbrida**:
+  - **Atendimento Web Público**: Clientes navegando no site da loja não precisam de cadastro ou senha para consultar instrumentos, garantindo zero fricção na experiência de compra.
+  - **Canais Externos & Backend-to-Backend (WhatsApp / CRM / Webhooks)**: Integrações com bots de mensageria (Evolution API, Z-API, Baileys, n8n) e rotas administrativas são protegidas por **Tokens Bearer JWT** (RFC 7519, algoritmo HMAC-SHA256) ou chave direta via cabeçalho `X-API-Key`.
+- **Emissão Dinâmica de Tokens JWT (`POST /api/auth/token`)**:
+  Permite emitir credenciais com tempo de vida controlado (`JWT_EXPIRATION_HOURS=24`):
+  ```bash
+  # 1. Solicitar token JWT para o bot do WhatsApp:
+  curl -X POST "http://localhost:8000/api/auth/token" \
+       -H "Content-Type: application/json" \
+       -d '{"client_id": "bot_whatsapp_vendas", "secret_key": "sua-chave-secreta"}'
+  
+  # Resposta:
+  # {"access_token": "eyJhbGciOiJIUzI1NiIs...", "token_type": "bearer", "expires_in_hours": 24}
+  ```
+- **Consumo da API com o Token JWT**:
+  ```bash
+  # 2. Enviar mensagem autenticada:
+  curl -X POST "http://localhost:8000/api/chat" \
+       -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
+       -H "Content-Type: application/json" \
+       -d '{"session_id": "5567998123456", "message": "Qual o violão mais vendido?"}'
+  ```
+- **Ambiente Flexível de Avaliação**:
+  - Se a variável `API_SECRET_KEY` estiver vazia no `.env` (padrão de desenvolvimento), a API opera em modo aberto facilitando testes locais e auditorias de código sem necessidade de configurar chaves adicionais.
+  - Ao preencher `API_SECRET_KEY=uma-chave-forte`, todas as rotas protegidas passam a exigir automaticamente o token Bearer ou o header `X-API-Key: sua-chave`.
 
 ### 7. Blindagem OWASP, Rate Limiting & Política de Cookies (LGPD)
-- **Cabeçalhos de Segurança HTTP**: Middleware ativo em todas as rotas injetando cabeçalhos de defesa: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block` e `Referrer-Policy: strict-origin-when-cross-origin`.
-- **Limitador de Taxa (Rate Limiter)**: Proteção em memória contra ataques de força bruta, spam de requisições e consumo excessivo de créditos de IA (teto padrão de 60 requisições/minuto por cliente).
-- **Banner de Consentimento & Modal de Privacidade**: Interface Web com aviso transparente de cookies estritamente técnicos (armazenamento local) e modal com os direitos do titular sob a LGPD (Lei 13.709/2018).
+- **Cabeçalhos de Segurança HTTP (Middleware OWASP)**:
+  Todas as respostas da aplicação incluem cabeçalhos de defesa ativa:
+  - `X-Content-Type-Options: nosniff`: Impede ataques de interpretação forçada de tipo MIME.
+  - `X-Frame-Options: SAMEORIGIN`: Protege o chat web contra ataques de clickjacking.
+  - `X-XSS-Protection: 1; mode=block`: Bloqueia tentativas de injeção de script refletido.
+  - `Referrer-Policy: strict-origin-when-cross-origin`: Resguarda dados de rota em navegações externas.
+- **Proteção Anti-DDoS e Rate Limiting**:
+  - Algoritmo de janela deslizante (*sliding window*) em memória que monitora o volume de requisições por IP ou sessão.
+  - Limite configurável via `RATE_LIMIT_PER_MINUTE` (padrão de 60 requisições/minuto). Caso ultrapassado, o serviço devolve status `HTTP 429 Too Many Requests` com mensagem orientativa, resguardando os custos com a LLM.
+- **Política de Cookies e Armazenamento Local (LGPD)**:
+  - **Banner Flutuante de Consentimento**: O chat web exibe aviso transparente informando que o armazenamento local (`localStorage`) é utilizado **estritamente para manter a sessão conversacional ativa e preferências de navegação**.
+  - **Sem Rastreamento de Terceiros**: A aplicação não utiliza cookies de publicidade, pixel de rastreamento ou compartilhamento de dados analíticos com terceiros.
+  - **Modal de Transparência**: O usuário pode clicar em "Ver Detalhes" para consultar as garantias dos Artigos 15, 16 e 18 da LGPD (retenção máxima de 7 dias e direito ao esquecimento imediato).
+  - **Endpoint Público de Auditoria**: `GET /api/security/policies` retorna o manifesto JSON completo de conformidade para auditoria externa.
 
 ---
 
