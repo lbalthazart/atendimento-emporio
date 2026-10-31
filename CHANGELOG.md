@@ -7,6 +7,8 @@ Todas as alterações notáveis deste projeto são registradas neste documento, 
 ## [1.1.0] - 2026-10-31
 
 ### ✨ Melhorias e Resiliência (Tolerância a Falhas)
+- **Envio Conjunto de Imagem + Legenda (Estilo WhatsApp)**: Implementação de pré-visualização de fotos anexadas no chat com barra de anexo e botão de remoção, permitindo que o usuário digite sua pergunta (ex: *"vocês têm dessa?"*) junto com a imagem antes do envio (`feat: add image attachment preview and combined photo+text submission`).
+- **Reconhecimento Visual no Agente com Busca de Estoque**: Instrução explícita ao assistente para tratar a pré-análise de visão como instrumento visto diretamente, acionando automaticamente a ferramenta `consultar_catalogo` para verificar modelos em estoque com preços e desconto PIX (`feat: enhance multimodal vision prompt and catalog lookups for photos`).
 - **Fila de Mensagens Interativa (Debounce)**: Ativação da fila inteligente de mensagens no Web Chat com janela de 2.2 segundos para agrupar frases rápidas sequenciais em um único raciocínio coerente (`feat: activate interactive message debouncing queue in web chat UI`).
 - **Layout Fixo e Rolagem Suave**: Ancoragem permanente da caixa de texto no rodapé com `shrink-0` e `h-screen overflow-hidden`, garantindo que apenas a área de mensagens role para cima (`fix: dock chat input to bottom with flexbox shrink-0`).
 - **Garantia de Zero Alucinação**: Remoção de qualquer chave PIX presumida, alinhando a resposta estritamente ao manual da loja (a chave/QR Code oficial é gerado na finalização da compra pelo WhatsApp oficial da equipe) (`fix: enforce zero hallucination for PIX keys`).

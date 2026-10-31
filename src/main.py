@@ -132,8 +132,10 @@ async def media_endpoint(
             prompt="Identifique o instrumento musical da foto, marca visível, tipo de cordas e condição aparente para atendimento."
         )
         combined_text = f"[Foto do instrumento anexada: {image_analysis}]"
-        if message:
-            combined_text += f"\nPergunta do cliente: {message}"
+        if message and message.strip():
+            combined_text += f"\nPergunta do cliente: {message.strip()}"
+        else:
+            combined_text += "\nPergunta do cliente: Vocês vendem ou têm disponível instrumentos desse modelo ou similares no catálogo?"
 
         result = await agent.process_message(session_id=session_id, user_message=combined_text)
         return ChatResponse(

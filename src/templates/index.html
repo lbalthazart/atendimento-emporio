@@ -104,6 +104,19 @@
 
     <!-- Input Box (Fixo, nunca desce ou sai da tela) -->
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-2 shadow-lg shrink-0">
+      <!-- Barra de Pré-visualização de Imagem Anexada -->
+      <div id="attachmentPreview" class="hidden mb-2 px-3 py-1.5 bg-slate-900/90 border border-amber-500/40 rounded-xl flex items-center justify-between text-xs text-slate-300">
+        <div class="flex items-center gap-2 truncate">
+          <i class="fa-solid fa-image text-amber-400"></i>
+          <span class="text-slate-400 text-[11px]">Foto selecionada:</span>
+          <span id="attachmentName" class="truncate font-medium text-amber-300">foto.png</span>
+          <span id="attachmentSize" class="text-slate-500 text-[10px]"></span>
+        </div>
+        <button type="button" id="btnRemoveAttachment" title="Remover anexo" class="text-slate-400 hover:text-rose-400 transition ml-2 p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
       <form id="chatForm" class="flex items-center gap-2">
         <input 
           id="messageInput" 
@@ -303,8 +316,80 @@
       debounceTimer = setTimeout(dispatchQueuedMessages, DEBOUNCE_WAIT_MS);
     }
 
-    chatForm.addEventListener('submit', (e) => {
+    // Elementos da barra de anexo
+    const attachmentPreview = document.getElementById('attachmentPreview');
+    const attachmentName = document.getElementById('attachmentName');
+    const attachmentSize = document.getElementById('attachmentSize');
+    const btnRemoveAttachment = document.getElementById('btnRemoveAttachment');
+    let attachedFile = null;
+
+    // Quando o usuário escolhe uma foto: anexa e permite digitar legenda/pergunta
+    imageUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      attachedFile = file;
+      attachmentName.innerText = file.name;
+      attachmentSize.innerText = `(${(file.size / 1024).toFixed(1)} KB)`;
+      attachmentPreview.classList.remove('hidden');
+      messageInput.placeholder = 'Digite sua pergunta sobre a foto (ex: vocês têm dessa?)...';
+      messageInput.focus();
+    });
+
+    // Remover anexo selecionado
+    btnRemoveAttachment.addEventListener('click', () => {
+      attachedFile = null;
+      imageUpload.value = '';
+      attachmentPreview.classList.add('hidden');
+      messageInput.placeholder = 'Envie sua mensagem (pode enviar várias frases rápidas seguidas)...';
+    });
+
+    // Submissão do formulário: suporta envio conjunto (Foto + Pergunta) ou texto na fila
+    chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (attachedFile) {
+        const fileToSend = attachedFile;
+        const userText = messageInput.value.trim();
+
+        // Limpa estado do anexo e do input
+        attachedFile = null;
+        imageUpload.value = '';
+        attachmentPreview.classList.add('hidden');
+        messageInput.value = '';
+        messageInput.placeholder = 'Envie sua mensagem (pode enviar várias frases rápidas seguidas)...';
+
+        // Mostra na tela a foto + a pergunta que o usuário digitou
+        const userBalloon = userText 
+          ? `📸 [Foto anexada: ${fileToSend.name}]
+${userText}`
+          : `📸 [Foto enviada: ${fileToSend.name}]`;
+        appendMessage('user', userBalloon);
+        showProcessingIndicator();
+
+        const formData = new FormData();
+        formData.append('file', fileToSend);
+        formData.append('session_id', sessionId);
+        if (userText) {
+          formData.append('message', userText);
+        }
+
+        try {
+          const res = await fetch('/api/media', { method: 'POST', body: formData });
+          const data = await res.json();
+          removeTyping();
+          appendMessage('assistant', data.reply, data.tools_used);
+        } catch (err) {
+          removeTyping();
+          appendMessage('assistant', 'Desculpe, ocorreu um erro ao processar a imagem do instrumento.');
+        } finally {
+          messageInput.focus();
+          scrollToBottom();
+        }
+        return;
+      }
+
+      // Se não há imagem anexada, usa a fila normal com debounce
       queueUserMessage(messageInput.value);
     });
 
@@ -324,30 +409,6 @@
         location.reload();
       } catch (e) {
         alert('Erro ao excluir dados.');
-      }
-    });
-
-    // Envio de imagem
-    imageUpload.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('session_id', sessionId);
-      formData.append('message', 'Por favor, avalie a imagem deste instrumento.');
-
-      appendMessage('user', `[Foto enviada: ${file.name}]`);
-      showProcessingIndicator();
-
-      try {
-        const res = await fetch('/api/media', { method: 'POST', body: formData });
-        const data = await res.json();
-        removeTyping();
-        appendMessage('assistant', data.reply, data.tools_used);
-      } catch (err) {
-        removeTyping();
-        appendMessage('assistant', 'Erro ao processar imagem.');
       }
     });
   </script>
