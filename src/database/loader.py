@@ -72,13 +72,19 @@ CREATE INDEX IF NOT EXISTS idx_orders_tracking ON orders(tracking_code);
 CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions(is_active);
 """
 
-def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
-    """Retorna uma conexão configurada com o SQLite."""
-    path = db_path or settings.DATABASE_PATH
+def _raw_connection(path: Path) -> sqlite3.Connection:
+    """Abre conexão crua com o SQLite."""
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
+
+def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
+    """Retorna uma conexão configurada com o SQLite, inicializando o banco se não existir."""
+    path = db_path or settings.DATABASE_PATH
+    if not path.exists():
+        init_database(path)
+    return _raw_connection(path)
 
 def _find_csv(prefix: str, data_dir: Path) -> Optional[Path]:
     """Localiza o arquivo CSV correspondente, aceitando prefixos flexíveis."""
@@ -92,7 +98,7 @@ def init_database(db_path: Optional[Path] = None, data_dir: Optional[Path] = Non
     path = db_path or settings.DATABASE_PATH
     source_dir = data_dir or DATA_DIR
 
-    conn = get_db_connection(path)
+    conn = _raw_connection(path)
     with conn:
         conn.executescript(SCHEMA_SQL)
 

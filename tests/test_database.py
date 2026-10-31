@@ -1,6 +1,3 @@
-import pytest
-from pathlib import Path
-from src.database.loader import init_database
 from src.database.queries import (
     get_order_status,
     get_product_by_id,
@@ -8,17 +5,6 @@ from src.database.queries import (
     list_categories,
     search_products,
 )
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_db(tmp_path_factory):
-    """Inicializa banco SQLite em diretório temporário para testes."""
-    test_db = tmp_path_factory.mktemp("db") / "test_emporio.sqlite3"
-    init_database(db_path=test_db)
-    
-    # Atualiza conexão para usar o banco de teste durante a execução
-    from src.config import settings
-    settings.DATABASE_PATH = test_db
-    return test_db
 
 def test_list_categories():
     categories = list_categories()
