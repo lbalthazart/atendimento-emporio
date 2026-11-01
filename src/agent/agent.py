@@ -11,34 +11,76 @@ from src.memory.session_store import SessionStore, get_session_store
 
 logger = logging.getLogger(__name__)
 
+EN_WORDS = {
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he",
+    "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or",
+    "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about",
+    "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know",
+    "take", "into", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look",
+    "only", "come", "its", "over", "think", "also", "back", "after", "use", "how", "our", "work", "well",
+    "way", "even", "new", "want", "because", "any", "these", "give", "most", "us", "is", "are", "am",
+    "was", "were", "been", "being", "has", "had", "did", "does", "having", "hi", "hello", "hey", "please",
+    "thank", "thanks", "price", "cost", "buy", "guitar", "guitars", "drum", "drums", "bass", "acoustic",
+    "electric", "store", "shop", "address", "ship", "shipping", "delivery", "order", "return", "refund",
+    "discount", "promotion", "promotions", "clearance", "stock", "available", "cheapest", "expensive", "best",
+    "tell", "find", "show", "much", "many", "cheap"
+}
+
+PT_WORDS = {
+    "o", "a", "os", "as", "um", "uma", "uns", "umas", "de", "da", "do", "das", "dos", "em", "na", "no",
+    "nas", "nos", "por", "para", "com", "sem", "sob", "sobre", "e", "ou", "mas", "que", "se", "como",
+    "quando", "onde", "quem", "qual", "quais", "quanto", "quanta", "quantos", "quantas", "você", "voce",
+    "vocês", "voces", "ele", "ela", "eles", "elas", "nós", "nos", "eu", "meu", "minha", "meus", "minhas",
+    "seu", "sua", "seus", "suas", "nosso", "nossa", "é", "e", "são", "sao", "era", "eram", "foi", "foram",
+    "ser", "estar", "está", "esta", "estão", "estao", "ter", "tem", "têm", "tinha", "haver", "há", "ha",
+    "loja", "violão", "violao", "violões", "violoes", "guitarra", "guitarras", "bateria", "baterias",
+    "teclado", "teclados", "instrumento", "instrumentos", "preço", "preco", "promoção", "promocao",
+    "promoções", "promocoes", "desconto", "frete", "entrega", "devolução", "devolucao", "pedido",
+    "rastreio", "estoque", "parcelamento", "cartão", "cartao", "pix", "boleto", "gostaria", "quero",
+    "ajuda", "favor", "obrigado", "obrigada", "olá", "ola", "oi", "opa", "bom", "boa", "tarde", "noite",
+    "dia", "mais", "menos", "barato", "caro"
+}
+
 def get_language_directive(text: str) -> str:
     """
     Detecta se o usuário está se comunicando em inglês ou espanhol para aplicar
     Language Mirroring estrito, garantindo respostas no idioma do interlocutor.
     """
-    text_lower = text.lower()
-    en_markers = {
-        "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
-        "how", "what", "where", "who", "which", "when", "why", "is", "are",
-        "do", "does", "have", "has", "can", "could", "would", "should",
-        "please", "thank", "thanks", "guitar", "guitars", "price", "stock",
-        "shipping", "order", "delivery", "store", "buy", "discount", "refund"
-    }
-    words = set(re.findall(r"\b[a-zA-Z]+\b", text_lower))
-    if len(words & en_markers) >= 2 or any(text_lower.startswith(p) for p in ["hello", "hi ", "hey "]):
+    clean_text = text.strip().lower()
+    if clean_text in {"hi", "hello", "hey", "good morning", "good afternoon"}:
         return (
-            "\n\n--- CRITICAL LANGUAGE DIRECTIVE (ENGLISH) ---\n"
-            "The customer is communicating in ENGLISH. Your entire response MUST be written in 100% natural, fluent English! "
-            "Translate catalog descriptions, store details, and closing remarks into English. "
-            "Keep product prices in Brazilian Reais (R$) and keep official store contact numbers unchanged."
+            "\n\n======================================================\n"
+            "CRITICAL OVERRIDE: THE CURRENT USER IS SPEAKING IN ENGLISH!\n"
+            "- You MUST formulate your entire response in 100% natural, fluent English.\n"
+            "- Even if previous messages in the conversation history were in Portuguese, SWITCH TO ENGLISH NOW.\n"
+            "- Even if database tool results are in Portuguese, translate everything into English.\n"
+            "- Keep Brazilian Real currency (R$), store policies, and official contact phone numbers intact.\n"
+            "======================================================\n"
+        )
+
+    words = set(re.findall(r"\b[a-zA-ZáéíóúâêîôûãõçÁÉÍÓÚÂÊÎÔÛÃÕÇ]+\b", clean_text))
+    en_score = len(words & EN_WORDS)
+    pt_score = len(words & PT_WORDS)
+
+    if en_score > pt_score or any(clean_text.startswith(p) for p in ["hello", "hi ", "hey "]):
+        return (
+            "\n\n======================================================\n"
+            "CRITICAL OVERRIDE: THE CURRENT USER IS SPEAKING IN ENGLISH!\n"
+            "- You MUST formulate your entire response in 100% natural, fluent English.\n"
+            "- Even if previous messages in the conversation history were in Portuguese, SWITCH TO ENGLISH NOW.\n"
+            "- Even if database tool results are in Portuguese, translate everything into English.\n"
+            "- Keep Brazilian Real currency (R$), store policies, and official contact phone numbers intact.\n"
+            "======================================================\n"
         )
         
     es_markers = {"hola", "buenos dias", "buenas tardes", "precio", "tienen", "guitarra", "guitarras", "envio", "cuanto", "donde"}
-    if len(words & es_markers) >= 2 or text_lower.startswith("hola"):
+    if len(words & es_markers) >= 2 or clean_text.startswith("hola"):
         return (
-            "\n\n--- CRITICAL LANGUAGE DIRECTIVE (SPANISH) ---\n"
-            "El cliente se está comunicando en ESPAÑOL. Toda tu respuesta DEBE formularse en español fluido y natural. "
-            "Traduce descripciones del catálogo y detalles de la tienda al español, manteniendo los precios en Reales (R$)."
+            "\n\n======================================================\n"
+            "CRITICAL OVERRIDE: THE CURRENT USER IS SPEAKING IN SPANISH!\n"
+            "- El cliente se está comunicando en ESPAÑOL. Toda tu resposta DEBE formularse en español fluido y natural.\n"
+            "- Traduce descripciones del catálogo y detalles de la tienda al español, manteniendo los precios en Reales (R$).\n"
+            "======================================================\n"
         )
 
     return ""

@@ -146,6 +146,10 @@ def test_language_directive_detection():
     assert "ENGLISH" in get_language_directive("Hello! Do you have electric guitars in stock?")
     assert "ENGLISH" in get_language_directive("Hi, what is the price of the Fender Stratocaster?")
     assert "ENGLISH" in get_language_directive("Can I order online and get free shipping?")
+    assert "ENGLISH" in get_language_directive("hi")
+    assert "ENGLISH" in get_language_directive("hello")
+    assert "ENGLISH" in get_language_directive("price of fender")
+    assert "ENGLISH" in get_language_directive("can you help me?")
 
     # Spanish inputs
     assert "SPANISH" in get_language_directive("Hola, ¿tienen guitarras disponibles?")
