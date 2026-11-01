@@ -441,17 +441,27 @@ Na pasta [`examples/`](examples/), estruturei **4 cenários completos de atendim
 
 Com mais tempo de desenvolvimento, priorizaria as seguintes melhorias arquiteturais e de produto no roadmap:
 
-1. **Painel do Administrador com Login Seguro & Chat Humano de Transbordo (Human-in-the-Loop)**:
-   - **Interface de Login do Administrador**: Autenticação administrativa com credenciais fortes, suporte a MFA (Autenticação Multifator) e controle de permissões por perfil (operador de vendas vs. gerente de suporte).
-   - **Console de Transbordo Humano em Tempo Real**: Dashboard em que o atendente humano da loja assume diretamente as conversas que acionaram o estado de pausa de IA (`is_human_paused = True`). O operador conversa com o cliente na mesma linha de tempo sem sobreposição do bot e tem o poder de reativar a automação assim que o atendimento humanizado for finalizado.
+1. **Painel do Administrador & Gestão Dinâmica da Base de Dados (Hot-Reload de Catálogo)**:
+   - **Limitação Atual**: No estágio atual do protótipo, a base de dados relacional é carregada na inicialização do serviço a partir dos arquivos CSV estáticos (`data/`). Qualquer atualização de preços, novos produtos ou inserção de queimas de estoque exige a reinicialização manual da aplicação ou rebuild do container.
+   - **Módulo de Upload de Planilhas (Data Sync)**: Interface visual no painel administrativo para upload direto de novas planilhas (CSV/XLSX) de produtos, estoque e promoções com validação sintática prévia (verificação de colunas obrigatórias, integridade referencial e tipos numéricos) antes da gravação.
+   - **Atualização a Quente (*Hot-Reload*)**: Recarga atômica do banco de dados SQLite em tempo de execução via endpoint administrativo autenticado (`POST /api/admin/catalog/reload`), sem indisponibilidade do sistema nem desconexão de clientes ativos no chat.
+   - **Versionamento e Rollback de Cargas**: Registro de histórico das planilhas importadas, permitindo reverter imediatamente para a versão anterior do catálogo em caso de inconsistência de dados ou erro de digitação de preços.
+   - **Console de Transbordo Humano em Tempo Real (Human-in-the-Loop)**: Dashboard integrado ao painel onde os atendentes humanos da loja acompanham e assumem diretamente as conversas pausadas (`is_human_paused = True`), restabelecendo a IA com um clique após a conclusão do atendimento.
+   - **Autenticação Administrativa Segura**: Acesso restrito por login com credenciais fortes, suporte a MFA (Autenticação Multifator) e controle de permissões por perfil (vendedor vs. gerente de suporte).
 2. **Módulo de CRM Completo de Clientes Ativos**:
    - **Base Estruturada de Clientes (Visão 360°)**: Expansão da tabela relacional `customers` para um painel gerencial de CRM contendo os dados dos clientes ativos da loja: dados cadastrais protegidos, histórico completo de pedidos (`orders`), marcas e instrumentos favoritos, ticket médio e status de fidelidade.
    - **Histórico Unificado de Interações**: Cruzamento de atendimentos anteriores com compras faturadas, permitindo recomendações ultra-personalizadas pelo consultor humano e ações proativas de pós-venda (ex: aviso de chegada de instrumentos desejados).
    - **Auditoria de Acesso LGPD**: Registro estrito de logs de auditoria sempre que um atendente consultar dados de contato de um cliente, garantindo rastreabilidade total conforme a Lei 13.709/2018.
-3. **Reserva Automática de Estoque em Tempo Real**: Integração transacional com o ERP da loja para travar o item no carrinho durante a negociação ou geração do pedido.
-4. **Geração de Cobrança PIX Copia-e-Cola Dinâmica**: Integração direta com gateway bancário para gerar o QR Code e chave PIX dinâmica instantaneamente na conversa.
-5. **Reranker Semântico para Políticas**: Adição de um modelo de re-ranking (como Cohere Rerank) para refinar a precisão em trechos altamente específicos de manuais contratuais extensos.
-6. **Framework de Avaliação Contínua (LLM Evals)**: Implementação de pipeline de testes automatizados com *LLM-as-a-Judge* (ex: DeepEval ou Ragas) medindo acurácia factual, tom de voz e taxa de recusa de prompt injection a cada commit.
+3. **Integração com ERP & Sincronização Automática de Estoque**:
+   - Conexão nativa com ERPs de e-commerce (como Bling, Tiny ou Omie) via webhooks, refletindo automaticamente baixas de estoque decorrentes de vendas presenciais na loja física de Campo Grande e entrada de novos lotes de instrumentos.
+4. **Reserva Automática de Estoque em Tempo Real**:
+   - Bloqueio temporário da unidade de instrumento no carrinho durante a negociação ou geração do pedido para evitar venda duplicada de itens com estoque unitário.
+5. **Geração de Cobrança PIX Copia-e-Cola Dinâmica**:
+   - Integração direta com gateway bancário ou fintech para gerar o QR Code dinâmico e código Pix copia-e-cola com valor exato diretamente na conversa.
+6. **Reranker Semântico para Políticas**:
+   - Adição de um modelo de re-ranking (como Cohere Rerank) para refinar a precisão em trechos altamente específicos de manuais contratuais extensos.
+7. **Framework de Avaliação Contínua (LLM Evals)**:
+   - Implementação de pipeline de testes automatizados com *LLM-as-a-Judge* (ex: DeepEval ou Ragas) medindo acurácia factual, tom de voz e taxa de recusa de prompt injection a cada commit.
 
 ---
 
