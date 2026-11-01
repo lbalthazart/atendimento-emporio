@@ -272,7 +272,7 @@ pytest -v
 
 The server provides a modern, responsive web chat served directly by FastAPI without external frontend build steps:
 
-![Web Customer Service Interface](docs/screenshots/interface_chat.png)
+![Web Customer Service Interface](docs/screenshots/interface_chat_en.png)
 
 ### Available REST Endpoints:
 

@@ -8,7 +8,7 @@ Each `.md` document presents the complete multi-turn conversation, the live brow
 
 ## 📸 Live Web Interface Demonstration
 
-![Web Customer Service Interface](../docs/screenshots/interface_chat.png)
+![Web Customer Service Interface](../docs/screenshots/interface_chat_en.png)
 
 ---
 
