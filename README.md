@@ -115,6 +115,7 @@ Below, I outline the technical justifications for each architectural pillar of t
 | **4. Hybrid UI** | Embedded Web Chat + RESTful API | Instant browser-based assessment without Node.js dependencies, coupled with plug-and-play REST endpoints for WhatsApp bots (Evolution API, Z-API, n8n). |
 | **5. Memory & LGPD** | In-Memory Sessions with 7-Day TTL | Strict compliance with the Brazilian General Data Protection Law (Lei 13.709/2018); automated 7-day conversation purge and right-to-be-forgotten deletion. |
 | **6. Data Ingestion** | Indexed SQLite + Policy Chunking | Sub-millisecond SQL queries over operational CSVs and high-precision normative extraction from the official PDF manual. |
+| **7. Multilingual Architecture** | Dynamic Language Mirroring | Real-time language detection mirroring English/Spanish inquiries while preserving Brazilian Real (R$) currency and local store warranty terms. |
 
 ---
 

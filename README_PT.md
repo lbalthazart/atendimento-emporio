@@ -112,6 +112,7 @@ Abaixo detalho as decisões e justificativas técnicas para cada um dos eixos ar
 | **4. Interface Híbrida** | Web Chat Integrado + API RESTful | Permite avaliação imediata no navegador (sem dependências de Node.js/npm) e integração plug-and-play com bots de WhatsApp (Evolution API, Z-API, n8n). |
 | **5. Persistência & LGPD** | Memória em Sessão com TTL de 7 Dias | Conformidade estrita com a LGPD (Lei 13.709/2018); expurgo automático de conversas após 7 dias e endpoint de exclusão sob demanda. |
 | **6. Tratamento de Dados** | SQLite Indexado + Parser de Políticas | Consultas SQL de milissegundo a partir dos CSVs brutos e recuperação por seções normativas do manual em PDF. |
+| **7. Arquitetura Multilíngue** | Espelhamento Dinâmico de Idioma (*Language Mirroring*) | Detecção e resposta fluida em inglês ou espanhol mantendo valores em Reais (R$) e dados reais da loja. |
 
 ---
 
