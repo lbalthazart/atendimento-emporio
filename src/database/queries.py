@@ -168,9 +168,16 @@ def get_order_status(
     customer_identifier: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Localiza o pedido pelo ID e retorna detalhes, status, rastreamento e itens.
+    Localiza o pedido pelo ID obrigatório e retorna detalhes, status, rastreamento e itens.
+    Para segurança contra vazamento de dados (LGPD), a consulta exige estritamente o número do pedido.
     Se fornecido, valida se o identificador do cliente confere com o titular.
     """
+    if not order_id or int(order_id) <= 0:
+        return {
+            "found": False,
+            "message": "O número do pedido (ID) é obrigatório para localização. Não realizamos busca avulsa por nome para prevenir vazamento de dados (LGPD)."
+        }
+
     conn = get_db_connection()
     try:
         order_sql = """
@@ -192,11 +199,10 @@ def get_order_status(
             LEFT JOIN customers c ON o.customer_id = c.customer_id
             WHERE o.order_id = ?;
         """
-        cursor = conn.execute(order_sql, (order_id,))
+        cursor = conn.execute(order_sql, (int(order_id),))
         row = cursor.fetchone()
         if not row:
             return {"found": False, "message": f"Pedido #{order_id} não foi encontrado no sistema."}
-
         order = dict(row)
 
         # Validação opcional de segurança

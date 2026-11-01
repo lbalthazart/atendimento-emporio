@@ -72,18 +72,29 @@ TOOL_DEFINITIONS: List[Dict[str, Any]] = [
     {
         "type": "function",
         "function": {
+            "name": "consultar_promocoes_ativas",
+            "description": "Consulta todas as ofertas especiais, queimas de estoque e promoções ativas na loja com seus respectivos percentuais de desconto e preços promocionais.",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "consultar_status_pedido",
-            "description": "Consulta o andamento, status de entrega, código de rastreamento e itens de uma compra realizada pelo cliente.",
+            "description": "Consulta o andamento, status de entrega, código de rastreamento e itens de uma compra realizada pelo cliente a partir do número oficial do pedido (id_pedido). Por segurança e proteção de dados (LGPD), a consulta exige obrigatoriamente o número do pedido.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "id_pedido": {
                         "type": "integer",
-                        "description": "Número de identificação do pedido."
+                        "description": "Número de identificação do pedido (obrigatório, ex: 8, 4, 1)."
                     },
                     "identificador_cliente": {
                         "type": "string",
-                        "description": "Opcional: nome, e-mail ou telefone do titular para validação de segurança."
+                        "description": "Opcional: nome, e-mail ou telefone do titular para validação cruzada de segurança."
                     }
                 },
                 "required": ["id_pedido"]
@@ -165,6 +176,13 @@ def execute_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
                 return {"encontrado": False, "mensagem": f"Produto com ID {prod_id} não foi encontrado."}
             return {"encontrado": True, "produto": prod}
 
+        elif name == "consultar_promocoes_ativas":
+            promos = list_active_promotions()
+            return {
+                "total_promocoes": len(promos),
+                "promocoes": promos
+            }
+
         elif name == "consultar_status_pedido":
             order_id = int(arguments.get("id_pedido", 0))
             ident = arguments.get("identificador_cliente")
@@ -183,7 +201,13 @@ def execute_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
                 "transbordo_acionado": True,
                 "motivo": motivo,
                 "resumo": resumo,
-                "instrucao_para_ia": "Informe ao cliente com cordialidade que a solicitação foi encaminhada para um atendente da equipe humana e que responderemos em breve no horário comercial."
+                "canais_de_contato_humano": {
+                    "whatsapp_atendimento": "(67) 3321-4500",
+                    "telefone_fixo": "(67) 3341-4444",
+                    "endereco": "Rua 14 de Maio, 3200 – Centro, Campo Grande - MS",
+                    "horarios": "Segunda a sexta das 09h às 18h, sábados das 09h às 13h"
+                },
+                "instrucao_para_ia": "Informe com clareza e transparência que você registrou a solicitação e forneça imediatamente os canais de contato direto com a equipe humana da loja: WhatsApp de atendimento (67) 3321-4500, telefone (67) 3341-4444 e endereço físico na Rua 14 de Maio, 3200 - Centro, Campo Grande/MS."
             }
 
         else:

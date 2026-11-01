@@ -48,3 +48,8 @@ def test_active_promotions():
     for p in promos:
         assert p["discount_percent"] > 0
         assert p["discounted_price"] < p["price_brl"]
+
+def test_order_status_requires_order_id():
+    status = get_order_status(0)
+    assert status["found"] is False
+    assert "obrigatório" in status["message"]

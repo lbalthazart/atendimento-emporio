@@ -5,13 +5,27 @@ from src.agent.tools import TOOL_DEFINITIONS, execute_tool
 from src.memory.session_store import SessionStore
 
 def test_tool_definitions_validity():
-    assert len(TOOL_DEFINITIONS) == 5
+    assert len(TOOL_DEFINITIONS) == 6
     names = [t["function"]["name"] for t in TOOL_DEFINITIONS]
     assert "consultar_catalogo" in names
+    assert "consultar_promocoes_ativas" in names
     assert "consultar_detalhes_produto" in names
     assert "consultar_status_pedido" in names
     assert "consultar_politicas" in names
     assert "solicitar_atendimento_humano" in names
+
+def test_execute_tool_promocoes():
+    res = execute_tool("consultar_promocoes_ativas", {})
+    assert res["total_promocoes"] >= 1
+    promo = res["promocoes"][0]
+    assert "promo_description" in promo
+    assert "discount_percent" in promo
+    assert promo["discounted_price"] < promo["price_brl"]
+
+def test_execute_tool_pedido_sem_id_bloqueado():
+    res = execute_tool("consultar_status_pedido", {"identificador_cliente": "Ana Carolina"})
+    assert res["found"] is False
+    assert "obrigatório" in res["message"]
 
 def test_execute_tool_catalogo():
     res = execute_tool("consultar_catalogo", {"termo": "Yamaha C40", "preco_maximo": 1000.0})
