@@ -1,5 +1,7 @@
 # 💬 Exemplos de Interação com o Atendimento
 
+> 🌐 **Idioma / Language**: **Português** | [English Version](README_EN.md)
+
 Esta pasta reúne transcrições e capturas de tela reais de atendimentos realizados pelo Agente Autônomo da **Empório da Música**, gravadas diretamente da interface web integrada via automação Playwright conectada ao backend FastAPI e aos modelos do OpenRouter.
 
 Cada documento `.md` consolida o diálogo em múltiplos turnos, o print oficial da tela no navegador e as ferramentas (*tool calling*) executadas no banco relacional SQLite e motor de políticas.
