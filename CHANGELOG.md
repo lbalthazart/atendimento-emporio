@@ -4,9 +4,20 @@ Todas as alterações notáveis deste projeto são registradas neste documento, 
 
 ---
 
+## [1.2.0] - 2026-11-01
+
+### ✨ Qualidade Conversacional, Transbordo e Blindagem de Dados (LGPD)
+- **Cenários Completos de Atendimento**: Reestruturação dos exemplos de atendimento na pasta `examples/`, reunindo conversas completas em múltiplos turnos sobre busca de catálogo com promoções, políticas do CDC, rastreamento seguro de pedidos e interação multimodal com foto e transbordo humano.
+- **Transbordo com Contatos Reais da Loja**: Atualização da ferramenta e do prompt de transbordo humano para fornecer imediatamente o WhatsApp oficial ((67) 3321-4500), telefone fixo ((67) 3341-4444) e endereço físico da loja para atendimento direto pelos consultores.
+- **Detecção e Apresentação Obrigatória de Promoções no Catálogo**: Instrução expressa no prompt do agente para inspecionar os campos `has_discount` e `discount_percent` retornados pelo catálogo SQL e apresentar sempre os preços promocionais com desconto ativo (ex: Crafter HT-100 com 18% off, Ohana CK-20 com 20% off), sem exigir que o cliente pergunte especificamente por promoções.
+- **Blindagem de Rastreamento contra Vazamento de Dados (LGPD)**: Exigência estrita do ID oficial do pedido (`order_id`) para qualquer consulta de status ou rastreamento, impedindo buscas avulsas apenas por nome ou telefone que poderiam expor dados sensíveis de clientes a terceiros.
+- **Suíte de Testes Automatizados**: 37 testes automatizados com 100% de aprovação no Pytest cobrindo segurança, persistência, banco de dados, motor de políticas e validação de ferramentas.
+
 ## [1.1.0] - 2026-10-31
 
 ### ✨ Melhorias e Resiliência (Tolerância a Falhas)
+- **Automação de Testes Reais & Captura de Telas**: Execução real dos cenários conversacionais através de automação Playwright contra o backend em produção e OpenRouter, gravando as respostas literais geradas pelo modelo e anexando prints reais de cada interação.
+- **Novos Exemplos de Avaliação & Screenshot em Alta Resolução**: Adição de 2 novos cenários de teste na pasta `examples/` cobrindo atendimento multimodal com envio conjunto de foto e pergunta (`06_reconhecimento_multimodal_foto.md`) e consulta de extremos de preço com ordenação SQL (`07_extremos_preco_ordenacao.md`), criação do catálogo `examples/README.md` e captura de screenshot em alta definição da interface do chat salva em `docs/screenshots/interface_chat.png` (`docs: add multimodal and price sorting examples with live chat screenshot`).
 - **Expansão do Roadmap de Negócio no README**: Documentação de melhorias futuras com planejamento do Painel do Administrador (login seguro, MFA, console de chat de transbordo humano durante a pausa da IA) e Módulo de CRM integrado com visão 360° dos clientes ativos e auditoria LGPD (`docs: add admin login, human takeover chat and customer CRM to roadmap`).
 - **Segurança de API, JWT & Rate Limiting**: Implementação de módulo `src/security.py` com suporte a autenticação por **Bearer JWT** e **API Key** (`X-API-Key`), proteção contra ataques de negação de serviço e abuso de créditos com limitador de taxa (60 req/min), e inclusão de cabeçalhos de segurança OWASP (`nosniff`, `SAMEORIGIN`, `strict-origin-when-cross-origin`) (`feat: implement JWT auth, rate limiting and security headers`).
 - **Banner de Cookies & Modal de Privacidade LGPD**: Inclusão de banner flutuante de consentimento de cookies essenciais e armazenamento local (localStorage) no chat web, com modal detalhando a política de retenção de 7 dias e direito ao esquecimento sob a Lei 13.709/2018 (`feat: add cookie consent banner and privacy modal`).

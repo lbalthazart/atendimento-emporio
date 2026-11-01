@@ -22,9 +22,10 @@ O agente atua no canal de atendimento auxiliando a equipe humana no esclarecimen
 - [Como Rodar o Projeto](#-como-rodar-o-projeto)
   - [Opção 1: Via Docker (Recomendado)](#opção-1-via-docker-recomendado)
   - [Opção 2: Execução Local](#opção-2-execução-local)
+  - [Executando os Testes Automatizados](#-executando-os-testes-automatizados)
 - [Interface Web e Documentação da API](#-interface-web-e-documentação-da-api)
 - [Integração Omnichannel (WhatsApp / Web / Redes)](#-integração-omnichannel-whatsapp--web--redes)
-- [Exemplos de Interação](#-exemplos-de-interação)
+- [Exemplos de Atendimento](#-exemplos-de-atendimento)
 - [Limitações Conhecidas & Próximos Passos](#-limitações-conhecidas--próximos-passos)
 - [Uso de Assistentes de Código (Workflow de IA)](#-uso-de-assistentes-de-código-workflow-de-ia)
 
@@ -77,16 +78,29 @@ O sistema adota uma abordagem modular baseada em **Function Calling / Tool Use n
 
 ### Componentes Principais
 1. **Orquestrador Central**: Implementado em Python assíncrono, gerencia o ciclo ReAct através de chamadas de função explícitas.
-2. **Tools de Dados Estruturados (SQLite)**: As tabelas fornecidas (`products.csv`, `orders.csv`, `order_items.csv`, `promotions.csv`, `customers.csv`, `categories.csv`) são automaticamente indexadas em SQLite, permitindo filtros exatos de preço, categoria e disponibilidade sem alucinações numéricas.
+2. **Tools de Dados Estruturados (SQLite)**: As tabelas fornecidas (`products.csv`, `orders.csv`, `order_items.csv`, `promotions.csv`, `customers.csv`, `categories.csv`) são automaticamente indexadas em SQLite, permitindo filtros exatos de preço, categoria, estoque, queima de estoque (`consultar_promocoes_ativas`) e localização segura de pedidos através do número oficial da compra (`consultar_status_pedido`) com validação de titularidade contra vazamento de dados (LGPD), eliminando alucinações numéricas.
 3. **Tools de Políticas da Loja (RAG / Knowledge Retrieval)**: O arquivo `políticas_da_loja.pdf` é estruturado por tópicos normativos (Pagamento, Devolução/Arrependimento em 7 dias pelo CDC, Troca por Defeito em 30 dias, Fretes e Garantia) para recuperação precisa de regras.
 4. **Fila Inteligente & Debounce**: Mensagens sequenciais enviadas pelo cliente em curto intervalo (padrão de 2.2s a 3.0s) são unificadas antes do envio à LLM, evitando respostas fragmentadas.
 5. **Transbordo Humano & Pausa de IA (`pause_ia`)**: Detecção de solicitações explícitas de suporte ou reclamações complexas, gerando payloads separados para o cliente e pausando temporariamente o bot para que a equipe humana assuma.
+
+### 🛠️ Ferramentas Oficiais do Agente (Function Calling)
+
+O agente dispõe de 6 ferramentas determinísticas, separando estritamente a interpretação do cliente do acesso aos dados factuais:
+
+| Ferramenta | Parâmetros Principais | Finalidade & Regras de Negócio |
+|---|---|---|
+| `consultar_catalogo` | `termo`, `categoria`, `preco_maximo`, `preco_minimo`, `ordenar_por` (`preco_asc` / `preco_desc`) | Consulta instrumentos musicais em estoque com filtros estruturados. Inclui cálculo automático de PIX (5% off) e verificação de queima de estoque. |
+| `consultar_promocoes_ativas` | *(nenhum)* | Recupera instantaneamente todas as ofertas e descontos especiais ativos no banco (ex: Crafter 18% OFF, Ohana 20% OFF) com valores promocionais calculados matematicamente. |
+| `consultar_detalhes_produto` | `produto_id` (`int`) | Recupera especificações aprofundadas de madeiras, acabamento, trastes, captação e JSON de specs do instrumento. |
+| `consultar_status_pedido` | `id_pedido` (`int`, **obrigatório**), `identificador_cliente` (`str`, opcional) | **Pesquisa de Pedido por Número**: Localiza status de entrega, código de rastreamento dos Correios/transportadora e itens comprados.<br>**Blindagem LGPD**: Exige obrigatoriamente o número do pedido (`id_pedido`). O agente recusa buscas avulsas apenas por nome ou telefone para impedir vazamento de dados de clientes a terceiros. |
+| `consultar_politicas` | `topico` (`str`) | RAG em manual oficial (PDF) sobre regras do CDC (arrependimento em 7 dias com frete coberto), defeitos (30 dias loja / 90 dias fabricante), fretes em Campo Grande e horários. |
+| `solicitar_atendimento_humano` | `motivo`, `resumo` | Transbordo para atendente humano em casos de reclamações graves ou solicitações explícitas, ativando pausa temporária da IA (`is_human_paused = True`). |
 
 ---
 
 ## 💡 Justificativa das Decisões Técnicas
 
-Abaixo detalham-se as justificativas aprofundadas para cada um dos eixos arquiteturais solicitados no desafio:
+Abaixo detalho as decisões e justificativas técnicas para cada um dos eixos arquiteturais do projeto:
 
 | Eixo Arquitetural | Escolha | Justificativa Sintética |
 |---|---|---|
@@ -115,7 +129,7 @@ Abaixo detalham-se as justificativas aprofundadas para cada um dos eixos arquite
 - **O Risco do RAG Ingênuo de Texto Puro**:
   - Injetar catálogos inteiros em texto plano no contexto da LLM causa alucinações numéricas graves (preços inventados, modelos trocados, promoções vencidas) e estouro da janela de contexto.
 - **A Solução Adotada (ReAct + Tool Calling)**:
-  - O agente atua como um **orquestrador cognitivo**: ele interpreta a intenção do cliente, extrai parâmetros (ex: termo de busca, teto de preço, categoria) e delega a busca a funções Python determinísticas (`consultar_catalogo`, `consultar_detalhes_produto`, `consultar_status_pedido`, `consultar_politicas`).
+  - O agente atua como um **orquestrador cognitivo**: ele interpreta a intenção do cliente, extrai parâmetros (ex: termo de busca, teto de preço, categoria) e delega a busca a funções Python determinísticas (`consultar_catalogo`, `consultar_promocoes_ativas`, `consultar_detalhes_produto`, `consultar_status_pedido`, `consultar_politicas`, `solicitar_atendimento_humano`).
   - O modelo apenas sintetiza em linguagem natural a resposta factual retornada pela ferramenta, garantindo **fidelidade matemática e comercial absoluta**.
 
 ### 3. Modelo e Provedor: OpenRouter com Fallbacks Automáticos
@@ -322,11 +336,35 @@ cp .env.example .env
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+### 🧪 Executando os Testes Automatizados
+
+A aplicação conta com uma suíte abrangente de **37 testes automatizados** cobrindo todos os módulos do sistema com 100% de aprovação:
+
+```bash
+# Executar toda a suíte de testes
+pytest
+
+# Executar com saída detalhada
+pytest -v
+```
+
+#### Módulos Cobertos:
+- `tests/test_database.py`: Carga relacional dos CSVs, busca estruturada, ordenação por preço, promoções e **exigência estrita de ID para busca de pedidos**.
+- `tests/test_agent.py`: Validação de schema das 6 ferramentas, loop cognitivo ReAct, recusa de busca de pedidos sem ID e cálculo de queima de estoque.
+- `tests/test_security.py`: Autenticação Bearer JWT, validação de `X-API-Key`, Rate Limiting deslizante (60 req/min) e cabeçalhos OWASP (`nosniff`, `SAMEORIGIN`).
+- `tests/test_memory.py`: TTL de 7 dias conforme LGPD, expurgo programado e isolamento de contexto entre clientes.
+- `tests/test_knowledge.py`: Extração e recuperação de tópicos do manual em PDF (CDC de 7 dias, trocas, garantia e fretes).
+- `tests/test_api.py`: Contratos REST de chat, healthcheck, upload multimodal e transbordo humano com pausa de IA.
+
 ---
 
 ## 💻 Interface Web e Documentação da API
 
-A aplicação disponibiliza uma **interface gráfica moderna de chat** embutida diretamente no backend (sem necessidade de instalar Node.js ou ferramentas de frontend adicionais), além de endpoints REST:
+A aplicação disponibiliza uma **interface gráfica moderna de chat** embutida diretamente no backend (sem necessidade de instalar Node.js ou ferramentas de frontend adicionais), estilizada com identidade visual acolhedora de loja de instrumentos musicais:
+
+![Interface Web de Atendimento](docs/screenshots/interface_chat.png)
+
+### Endpoints REST Disponíveis:
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -363,27 +401,45 @@ A arquitetura foi projetada para ser agnóstica de canal. Qualquer plataforma ex
 }
 ```
 
+**Exemplo de Rastreamento Seguro de Pedido por Número**:
+```json
+// POST /api/chat
+{
+  "session_id": "5567998123456",
+  "message": "Gostaria de rastrear meu pedido número 4"
+}
+```
+
+**Resposta do Agente**:
+```json
+{
+  "session_id": "5567998123456",
+  "reply": "Achei seu pedido número 4! Ele foi entregue em 22 de dezembro de 2025. O código de rastreamento é BRQM7890123BR e o item adquirido foi um Giannini GF-3D Dreadnought Sunburst. Se precisar de mais alguma informação, estou à disposição!",
+  "tools_used": ["consultar_status_pedido"],
+  "handoff_required": false
+}
+```
+
 Para integrar a bots de WhatsApp (como Evolution API, Z-API, Baileys ou n8n):
 - Basta configurar o webhook de mensagem recebida para disparar uma requisição `POST /api/chat` passando o número do cliente como `session_id`.
 - A fila com debounce nativo do agente agrupa automaticamente mensagens enviadas em sequência rápida.
 
 ---
 
-## 💬 Exemplos de Interação
+## 💬 Exemplos de Atendimento
 
-Conversas completas e detalhadas demonstrando o comportamento do agente encontram-se na pasta [`examples/`](examples/):
+Na pasta [`examples/`](examples/), estruturei **4 cenários completos de atendimento** com transcrições de interações reais e capturas de tela da interface web cobrindo os principais fluxos conversacionais da loja:
 
-1. **[Consulta de Catálogo com Filtros](examples/01_consulta_catalogo.md)**: Cliente buscando opções de violões até R$ 1.000,00 com consulta em tempo real ao banco de estoque e preços.
-2. **[Informações Institucionais e Horários](examples/02_informacoes_loja.md)**: Endereço físico em Campo Grande, canais de contato e horário de expediente.
-3. **[Consulta Específica de Preço e Desconto](examples/03_preco_takamine.md)**: Busca pelo modelo Takamine GD20, detalhamento das especificações e opções de parcelamento e PIX.
-4. **[Aplicação de Políticas de Devolução (CDC)](examples/04_devolucao_arrependimento.md)**: Cliente solicitando devolução por arrependimento; agente orienta sobre o prazo legal de 7 dias, condições da embalagem e frete coberto pela loja.
-5. **[Tratamento de Escopo e Transbordo](examples/05_fora_escopo_e_suporte.md)**: Cliente solicitando palhetas e cabos (fora de escopo) e posterior solicitação de contato com atendente humano.
+1. **[Catálogo, Preços e Promoções Ativas](examples/01_catalogo_precos_promocoes.md)**: Cliente consultando violões até R$ 1.000, checando o modelo Takamine GD20 e identificando ofertas ativas com descontos aplicados em tempo real (`consultar_catalogo`, `consultar_promocoes_ativas`).
+2. **[Informações da Loja e Políticas do CDC](examples/02_loja_horarios_politica_devolucao.md)**: Endereço físico e horários da loja em Campo Grande/MS combinados com a aplicação do direito legal de arrependimento em 7 dias com frete coberto pela loja (`consultar_politicas`).
+3. **[Rastreamento Seguro de Pedido e Proteção de Dados (LGPD)](examples/03_rastreamento_seguro_lgpd.md)**: Bloqueio de consulta por nome avulso para evitar vazamento de dados de clientes a terceiros, e localização detalhada da entrega e código de rastreio via ID do pedido (`consultar_status_pedido`).
+4. **[Reconhecimento Multimodal com Foto, Escopo e Transbordo Humano](examples/04_reconhecimento_multimodal_e_transbordo.md)**: Envio simultâneo de foto e pergunta no chat web, identificação da guitarra Gibson Les Paul, recusa amigável de venda de acessórios e transbordo para operador humano (`solicitar_atendimento_humano`).
 
 ---
 
 ## ⚖ Limitações Conhecidas & Próximos Passos (Roadmap)
 
-Caso houvesse mais tempo de desenvolvimento, as seguintes melhorias arquiteturais e de negócio seriam priorizadas no roadmap:
+Com mais tempo de desenvolvimento, priorizaria as seguintes melhorias arquiteturais e de produto no roadmap:
 
 1. **Painel do Administrador com Login Seguro & Chat Humano de Transbordo (Human-in-the-Loop)**:
    - **Interface de Login do Administrador**: Autenticação administrativa com credenciais fortes, suporte a MFA (Autenticação Multifator) e controle de permissões por perfil (operador de vendas vs. gerente de suporte).
@@ -401,13 +457,13 @@ Caso houvesse mais tempo de desenvolvimento, as seguintes melhorias arquiteturai
 
 ## 🤖 Uso de Assistentes de Código (Workflow de IA)
 
-Em consonância com as orientações do desafio técnico, documentamos com total transparência o uso de assistentes de inteligência artificial durante o projeto:
+Apresento com total transparência o fluxo de trabalho e o uso de assistentes de inteligência artificial durante o desenvolvimento deste projeto:
 
 - **Ferramenta Utilizada**: Google Antigravity & Claude 3.5 Sonnet / Gemini 2.0.
 - **Workflow Aplicado**:
-  1. **Planejamento & Engenharia de Requisitos**: Análise do PDF do desafio e dos CSVs para mapear requisitos funcionais, restrições da loja e casos de borda.
+  1. **Planejamento & Engenharia de Requisitos**: Análise da especificação do projeto e dos CSVs para mapear requisitos funcionais, restrições da loja e casos de borda.
   2. **Estruturação Arquitetural**: Concepção do modelo de *Tool Calling* em Python assíncrono para desacoplar a recuperação de dados do raciocínio da LLM.
   3. **Scaffolding de Código & Testes**: Geração dos modelos Pydantic, scripts de carga de banco SQLite e implementação do servidor FastAPI.
   4. **Refinamento & Code Review**: Verificação humana de cada regra de negócio (prazos do CDC, frete grátis para Campo Grande, proibição de venda de acessórios).
 
-O uso do assistente atuou como acelerador de produtividade na implementação do boilerplate e cobertura de testes, mantendo a direção técnica, decisões de design e validação estritamente sob comando humano.
+O assistente atuou como ferramenta de aceleração para implementação de boilerplate, scaffolding de testes e refinamento de queries, mantendo toda a direção arquitetural, regras de negócio e decisões de engenharia sob meu controle e validação.
