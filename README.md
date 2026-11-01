@@ -162,6 +162,10 @@ Customers on WhatsApp and chat widgets frequently split a single thought across 
 - **Sliding-Window Rate Limiting**: Enforces a 60 requests/minute ceiling per IP/session (`HTTP 429 Too Many Requests`).
 - **Bearer JWT Authentication**: Protects backend-to-backend integrations and admin routes via `POST /api/auth/token`.
 
+### 4. Multilingual Architecture & Dynamic Language Mirroring
+- **Primary Regional Persona**: Empório da Música operates as a brick-and-mortar and online retail store in Campo Grande/MS (Brazil), with Portuguese (PT-BR) as its baseline operational language.
+- **Dynamic Language Mirroring**: To support international customers or foreign recruiters testing the prototype, the agent features built-in language detection. If addressed in **English** or **Spanish**, the agent dynamically translates catalog descriptions, store hours, and policies into fluent English or Spanish, while preserving real Brazilian Real (R$) currency figures, warranty terms, and official store contact channels.
+
 ---
 
 ## 🔒 Data Privacy & LGPD Compliance (7-Day TTL)

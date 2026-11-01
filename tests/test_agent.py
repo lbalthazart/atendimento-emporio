@@ -138,3 +138,20 @@ async def test_openrouter_fallback_on_error():
         res = await client.chat_completion(messages=[{"role": "user", "content": "Teste"}])
         assert res["content"] == "Resposta do modelo de contingência!"
         assert mock_post.call_count == 2
+
+def test_language_directive_detection():
+    from src.agent.agent import get_language_directive
+
+    # English inputs
+    assert "ENGLISH" in get_language_directive("Hello! Do you have electric guitars in stock?")
+    assert "ENGLISH" in get_language_directive("Hi, what is the price of the Fender Stratocaster?")
+    assert "ENGLISH" in get_language_directive("Can I order online and get free shipping?")
+
+    # Spanish inputs
+    assert "SPANISH" in get_language_directive("Hola, ¿tienen guitarras disponibles?")
+    assert "SPANISH" in get_language_directive("Buenos dias, cuanto cuesta el envio?")
+
+    # Portuguese inputs (default fallback to standard Portuguese prompt)
+    assert get_language_directive("Olá, vocês têm Takamine?") == ""
+    assert get_language_directive("Qual o valor do violão Crafter?") == ""
+    assert get_language_directive("Gostaria de rastrear meu pedido 1") == ""

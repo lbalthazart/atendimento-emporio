@@ -260,6 +260,10 @@ Para proteger o backend contra acessos não autorizados, consumo indevido de cr�
   - **Modal de Transparência**: O usuário pode clicar em "Ver Detalhes" para consultar as garantias dos Artigos 15, 16 e 18 da LGPD (retenção máxima de 7 dias e direito ao esquecimento imediato).
   - **Endpoint Público de Auditoria**: `GET /api/security/policies` retorna o manifesto JSON completo de conformidade para auditoria externa.
 
+### 7. Arquitetura Multilíngue e Espelhamento Dinâmico de Idioma (Language Mirroring)
+- **Persona Nativa Regional**: O Empório da Música opera em Campo Grande/MS (Brasil), tendo o Português (PT-BR) como idioma comercial nativo.
+- **Detecção e Espelhamento Dinâmico de Idioma**: Para atender clientes estrangeiros ou avaliadores internacionais, o agente conta com detecção automática de idioma. Se o interlocutor se comunicar em **Inglês** ou **Espanhol**, o agente espelha o idioma com tradução fluida do catálogo e regras da loja, mantendo os valores originais em Reais (R$) e os canais oficiais de contato.
+
 ---
 
 ## 🔒 Conformidade com a LGPD (Retenção de 7 Dias)

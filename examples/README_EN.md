@@ -28,3 +28,4 @@ Each `.md` document presents the complete multi-turn conversation, the live brow
 1. **Automatic Promotions & Zero Numeric Hallucination**: Prices, clearance sale discounts, and cash PIX rates are strictly queried from normalized database tables.
 2. **Data Protection & Privacy (LGPD)**: Customer personal data and order histories are protected against social engineering leaks; the agent mandates the formal Order ID.
 3. **Focused Domain Scope & Actionable Human Handoff**: Polite refusal of out-of-scope products (accessories) and immediate provision of official store WhatsApp (`(67) 3321-4500`) and phone contacts when escalating to humans.
+4. **Multilingual Support (Language Mirroring)**: While the store's primary audience is Brazilian (PT-BR), the agent natively supports inquiries in English and Spanish, translating catalog specs and policies in real time while preserving official prices in Brazilian Reais (R$).

@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from typing import Any, Dict, List, Optional
 
 from src.agent.openrouter_client import OpenRouterClient, get_openrouter_client
@@ -9,6 +10,38 @@ from src.config import settings
 from src.memory.session_store import SessionStore, get_session_store
 
 logger = logging.getLogger(__name__)
+
+def get_language_directive(text: str) -> str:
+    """
+    Detecta se o usuário está se comunicando em inglês ou espanhol para aplicar
+    Language Mirroring estrito, garantindo respostas no idioma do interlocutor.
+    """
+    text_lower = text.lower()
+    en_markers = {
+        "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
+        "how", "what", "where", "who", "which", "when", "why", "is", "are",
+        "do", "does", "have", "has", "can", "could", "would", "should",
+        "please", "thank", "thanks", "guitar", "guitars", "price", "stock",
+        "shipping", "order", "delivery", "store", "buy", "discount", "refund"
+    }
+    words = set(re.findall(r"\b[a-zA-Z]+\b", text_lower))
+    if len(words & en_markers) >= 2 or any(text_lower.startswith(p) for p in ["hello", "hi ", "hey "]):
+        return (
+            "\n\n--- CRITICAL LANGUAGE DIRECTIVE (ENGLISH) ---\n"
+            "The customer is communicating in ENGLISH. Your entire response MUST be written in 100% natural, fluent English! "
+            "Translate catalog descriptions, store details, and closing remarks into English. "
+            "Keep product prices in Brazilian Reais (R$) and keep official store contact numbers unchanged."
+        )
+        
+    es_markers = {"hola", "buenos dias", "buenas tardes", "precio", "tienen", "guitarra", "guitarras", "envio", "cuanto", "donde"}
+    if len(words & es_markers) >= 2 or text_lower.startswith("hola"):
+        return (
+            "\n\n--- CRITICAL LANGUAGE DIRECTIVE (SPANISH) ---\n"
+            "El cliente se está comunicando en ESPAÑOL. Toda tu respuesta DEBE formularse en español fluido y natural. "
+            "Traduce descripciones del catálogo y detalles de la tienda al español, manteniendo los precios en Reales (R$)."
+        )
+
+    return ""
 
 def sanitize_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
@@ -82,7 +115,8 @@ class Agent:
 
         # 3. Prepara histórico limpo de conversação (apenas user e assistant final)
         history = self.session_store.get_messages(session_id, max_history=12, include_tools=False)
-        messages: List[Dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT}] + history
+        lang_directive = get_language_directive(user_message)
+        messages: List[Dict[str, Any]] = [{"role": "system", "content": SYSTEM_PROMPT + lang_directive}] + history
 
         tools_used: List[str] = []
         handoff_required = False
