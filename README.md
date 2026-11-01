@@ -248,7 +248,7 @@ uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
 ### 🧪 Running the Automated Test Suite
 
-The project includes an automated test suite of **37 unit and integration tests** with 100% pass rate:
+The project includes an automated test suite of **38 unit and integration tests** with 100% pass rate:
 
 ```bash
 # Run full test suite
@@ -325,7 +325,7 @@ curl -X POST "http://localhost:8000/api/chat" \
 
 ## 💬 Evaluation Scenarios & Interaction Examples
 
-In the [`examples/`](examples/) directory, I structured **4 comprehensive multi-turn scenarios** captured directly from live browser sessions via Playwright automation:
+In the [`examples/`](examples/) directory, I structured **4 comprehensive multi-turn scenarios** captured directly from live browser sessions via Playwright automation. Each document is **fully bilingual**, presenting both the original Brazilian Portuguese interaction with its live store screenshot and the complete English transcript with its corresponding live English browser screenshot:
 
 1. **[01_catalogo_precos_promocoes.md](examples/01_catalogo_precos_promocoes.md)**: Customer searching for acoustic guitars under R$ 1,000, querying the Takamine GD20 model, and automatically receiving active stock-clearance sale discounts (`consultar_catalogo`, `consultar_promocoes_ativas`).
 2. **[02_loja_horarios_politica_devolucao.md](examples/02_loja_horarios_politica_devolucao.md)**: Physical store address, contact numbers, and working hours in Campo Grande/MS combined with CDC legal remorse return policy (7 days with store-covered return shipping) (`consultar_politicas`).

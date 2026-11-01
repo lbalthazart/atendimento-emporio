@@ -47,6 +47,8 @@ def get_language_directive(text: str) -> str:
     Language Mirroring estrito, garantindo respostas no idioma do interlocutor.
     """
     clean_text = text.strip().lower()
+    if "pergunta do cliente:" in clean_text:
+        clean_text = clean_text.split("pergunta do cliente:")[-1].strip()
     if clean_text in {"hi", "hello", "hey", "good morning", "good afternoon"}:
         return (
             "\n\n======================================================\n"
@@ -87,26 +89,34 @@ def get_language_directive(text: str) -> str:
 
 def sanitize_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Higieniza a sequência de mensagens para garantir 100% de conformidade com as regras
-    da OpenAI/OpenRouter (evita erro 400 de mensagens 'tool' órfãs sem 'tool_calls' prévio).
+    Higieniza a sequencia de mensagens para conformidade com regras da OpenAI/OpenRouter
+    e suporta multiplas tool_calls em paralelo na mesma rodada ReAct.
     """
     sanitized: List[Dict[str, Any]] = []
     
     for msg in messages:
         role = msg.get("role")
         
-        # Mensagens 'tool' só podem existir se a mensagem imediatamente anterior for 'assistant' com 'tool_calls'
         if role == "tool":
             if not sanitized:
-                logger.warning("Descartando mensagem 'tool' no início do histórico.")
+                logger.warning("Descartando mensagem tool no inicio do historico.")
                 continue
-            prev = sanitized[-1]
-            if prev.get("role") != "assistant" or not prev.get("tool_calls"):
-                logger.warning(f"Descartando mensagem 'tool' órfã (anterior não é assistant com tool_calls): {msg}")
+
+            originating_assistant = None
+            for prev_msg in reversed(sanitized):
+                if prev_msg.get("role") == "assistant":
+                    originating_assistant = prev_msg
+                    break
+                elif prev_msg.get("role") != "tool":
+                    break
+
+            if not originating_assistant or not originating_assistant.get("tool_calls"):
+                logger.warning(f"Descartando mensagem tool orfa: {msg}")
                 continue
-            valid_ids = [tc.get("id") for tc in prev.get("tool_calls", [])]
+
+            valid_ids = [tc.get("id") for tc in originating_assistant.get("tool_calls", [])]
             if msg.get("tool_call_id") not in valid_ids:
-                logger.warning(f"Descartando mensagem 'tool' com call_id inválido: {msg.get('tool_call_id')}")
+                logger.warning(f"Descartando mensagem tool com call_id invalido: {msg.get('tool_call_id')}")
                 continue
 
         sanitized.append(msg)

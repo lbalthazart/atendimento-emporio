@@ -344,7 +344,7 @@ uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
 ### 🧪 Executando os Testes Automatizados
 
-A aplicação conta com uma suíte abrangente de **37 testes automatizados** cobrindo todos os módulos do sistema com 100% de aprovação:
+A aplicação conta com uma suíte abrangente de **38 testes automatizados** cobrindo todos os módulos do sistema com 100% de aprovação:
 
 ```bash
 # Executar toda a suíte de testes
@@ -434,7 +434,7 @@ Para integrar a bots de WhatsApp (como Evolution API, Z-API, Baileys ou n8n):
 
 ## 💬 Exemplos de Atendimento
 
-Na pasta [`examples/`](examples/), estruturei **4 cenários completos de atendimento** com transcrições de interações reais e capturas de tela da interface web cobrindo os principais fluxos conversacionais da loja:
+Na pasta [`examples/`](examples/), estruturei **4 cenários completos de atendimento em formato bilíngue** (trazendo o diálogo e print original em português e, em seguida, a transcrição completa e print em inglês), cobrindo os principais fluxos conversacionais da loja:
 
 1. **[Catálogo, Preços e Promoções Ativas](examples/01_catalogo_precos_promocoes.md)**: Cliente consultando violões até R$ 1.000, checando o modelo Takamine GD20 e identificando ofertas ativas com descontos aplicados em tempo real (`consultar_catalogo`, `consultar_promocoes_ativas`).
 2. **[Informações da Loja e Políticas do CDC](examples/02_loja_horarios_politica_devolucao.md)**: Endereço físico e horários da loja em Campo Grande/MS combinados com a aplicação do direito legal de arrependimento em 7 dias com frete coberto pela loja (`consultar_politicas`).

@@ -14,12 +14,12 @@ Each `.md` document presents the complete multi-turn conversation, the live brow
 
 ## 📑 Evaluation Scenarios
 
-| # | Scenario & Document | Browser Screenshot | Key Tools |
+| # | Scenario & Document | Browser Screenshot (English & Portuguese) | Key Tools |
 |---|---|---|---|
-| **01** | [**Catalog Search, Pricing & Active Promotions**](01_catalogo_precos_promocoes.md)<br>Filter guitars under R$ 1,000, price check on Takamine GD20, and automatic detection of clearance sales | ![Screenshot 01](screenshots/01_catalogo_precos_promocoes.png) | `consultar_catalogo`, `consultar_promocoes_ativas` |
-| **02** | [**Store Information & CDC Return Policy**](02_loja_horarios_politica_devolucao.md)<br>Store address and hours in Campo Grande/MS + statutory 7-day remorse return with store-covered shipping | ![Screenshot 02](screenshots/02_loja_horarios_politica_devolucao.png) | `consultar_politicas` |
-| **03** | [**Secure Order Tracking & LGPD Protection**](03_rastreamento_seguro_lgpd.md)<br>Rejection of unauthenticated name-only searches (anti-data leak) and verified courier tracking by Order ID (#4) | ![Screenshot 03](screenshots/03_rastreamento_seguro_lgpd.png) | `consultar_status_pedido` |
-| **04** | [**Multimodal Photo Recognition, Scope & Human Handoff**](04_reconhecimento_multimodal_e_transbordo.md)<br>Gibson Les Paul identification from photo, cordial refusal of accessories, and human handoff with direct contacts | ![Screenshot 04](screenshots/04_reconhecimento_multimodal_e_transbordo.png) | OpenRouter Vision, `consultar_catalogo`, `solicitar_atendimento_humano` |
+| **01** | [**Catalog Search, Pricing & Active Promotions**](01_catalogo_precos_promocoes.md)<br>Filter guitars under R$ 1,000, price check on Takamine GD20, and automatic detection of clearance sales | ![Screenshot 01 EN](screenshots/01_catalogo_precos_promocoes_en.png)<br>*(🇧🇷 [View Portuguese Screenshot](screenshots/01_catalogo_precos_promocoes.png))* | `consultar_catalogo`, `consultar_promocoes_ativas` |
+| **02** | [**Store Information & CDC Return Policy**](02_loja_horarios_politica_devolucao.md)<br>Store address and hours in Campo Grande/MS + statutory 7-day remorse return with store-covered shipping | ![Screenshot 02 EN](screenshots/02_loja_horarios_politica_devolucao_en.png)<br>*(🇧🇷 [View Portuguese Screenshot](screenshots/02_loja_horarios_politica_devolucao.png))* | `consultar_politicas` |
+| **03** | [**Secure Order Tracking & LGPD Protection**](03_rastreamento_seguro_lgpd.md)<br>Rejection of unauthenticated name-only searches (anti-data leak) and verified courier tracking by Order ID (#4) | ![Screenshot 03 EN](screenshots/03_rastreamento_seguro_lgpd_en.png)<br>*(🇧🇷 [View Portuguese Screenshot](screenshots/03_rastreamento_seguro_lgpd.png))* | `consultar_status_pedido` |
+| **04** | [**Multimodal Photo Recognition, Scope & Human Handoff**](04_reconhecimento_multimodal_e_transbordo.md)<br>Gibson Les Paul identification from photo, cordial refusal of accessories, and human handoff with direct contacts | ![Screenshot 04 EN](screenshots/04_reconhecimento_multimodal_e_transbordo_en.png)<br>*(🇧🇷 [View Portuguese Screenshot](screenshots/04_reconhecimento_multimodal_e_transbordo.png))* | OpenRouter Vision, `consultar_catalogo`, `solicitar_atendimento_humano` |
 
 ---
 

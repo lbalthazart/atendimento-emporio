@@ -1,0 +1,24 @@
+[
+  {
+    "role": "Customer",
+    "content": "Hello! What acoustic guitar options do you have available under R$ 1,000? And how much is the Takamine GD20?"
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "The Takamine GD20 Dreadnought Natural is available for R$ 2,199.00. It's a high-end dreadnought guitar with a solid cedar top, known for its warm and defined tone, making it perfect for fingerstyle playing.\n\nWould you like to know more about any of these options or is there a specific style you're interested in? 🎸🎶\n\n⚙️ tools:\nconsultar_catalogo",
+    "tools": [
+      "consultar_catalogo"
+    ]
+  },
+  {
+    "role": "Customer",
+    "content": "Do you have any guitars or instruments on sale today?"
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "Here are some great instruments on sale today:\n\nOhana CK-20 Concert Natural — R$ 439,20 (originally R$ 549,00) - A beautiful concert ukulele with a warm sound, perfect for strumming and fingerpicking. Enjoy a 20% discount!\n\nCrafter HT-100 Folk Aço Natural — R$ 1.967,18 (originally R$ 2.399,00) - This folk guitar offers a rich tone and is great for various styles. It's currently at an 18% discount!\n\nKalani KAL-700T Tenor Natural — R$ 323,10 (originally R$ 359,00) - A fantastic tenor ukulele with a bright sound, now with a 10% discount!\n\nTaylor 110e Dreadnought Natural — R$ 5.519,08 (originally R$ 5.999,00) - A top-quality dreadnought guitar known for its exceptional sound, available at an 8% discount!\n\nLet me know if you want more details about any of these options or if there's something specific you're looking for! 🎶✨\n\n⚙️ tools:\nconsultar_promocoes_ativas",
+    "tools": [
+      "consultar_promocoes_ativas"
+    ]
+  }
+]

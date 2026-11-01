@@ -1,0 +1,22 @@
+[
+  {
+    "role": "Customer",
+    "content": "📸 [Foto: sample_guitar.jpg]\nDo you have this guitar in stock? And do you also sell straps and spare guitar picks?"
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "I see you're interested in a Gibson Les Paul! 🎸 We have the Gibson Les Paul Standard '50s in stock for R$ 18,900.00. This electric guitar features Burstbucker pickups, offering a rich tone and endless sustain, perfect for rock and blues. If you pay via PIX, you can get it for R$ 17,955.00 with a 5% discount!\n\nAs for guitar straps and spare picks, we focus exclusively on musical instruments and do not sell accessories. I recommend checking out partner stores for those items.\n\nWhat style of music do you play? 🎶\n\n⚙️ tools:\nconsultar_catalogo",
+    "tools": [
+      "consultar_catalogo"
+    ]
+  },
+  {
+    "role": "Customer",
+    "content": "Understood. I would like to speak with a human agent from your team to complete the purchase."
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "I've registered your request to speak with a human agent! 😊 You can reach out directly to our team through the following channels:\n\nWhatsApp for Assistance: (67) 3321-4500\nStore Phone: (67) 3341-4444\nIn-Person Assistance: Rua 14 de Maio, 3200 – Centro, Campo Grande/MS (Monday to Friday from 9 AM to 6 PM, Saturdays from 9 AM to 1 PM).\n\nFeel free to send a message or call to continue your purchase. Our team will be happy to assist you! 🎶",
+    "tools": []
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "role": "Customer",
+    "content": "Hi! My name is Lucas Mendes, I bought from you but forgot my order details. Can you check my order with just my name?"
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "Hello Lucas! To ensure your privacy and security, I can only check your order details using the order ID. Could you please provide me with your order number? This way, I can assist you better! 😊",
+    "tools": []
+  },
+  {
+    "role": "Customer",
+    "content": "Ah, I understand the security policy! I found the receipt in my email: my order number is 4."
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "Your order details are as follows, Lucas:\n\nOrder ID: 4\nOrder Date: December 10, 2025\nStatus: Delivered\nTotal Amount: R$ 799.90\nPayment Method: Boleto\nTracking Code: BRQM7890123BR\nEstimated Delivery: December 22, 2025\n\nItems in your order:\n\nGiannini GF-3D Dreadnought Sunburst — R$ 799.90\n\nIf you have any more questions or need further assistance, feel free to ask! 🎶\n\n⚙️ tools:\nconsultar_status_pedido",
+    "tools": [
+      "consultar_status_pedido"
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Customer",
+    "content": "What is your store address and opening hours?"
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "Our store, Empório da Música, is located at:\n\nAddress: Rua 14 de Maio, 3200 – Centro, Campo Grande - MS.\n\nOpening Hours:\n\nMonday to Friday: 9 AM to 6 PM\nSaturday: 9 AM to 1 PM\n\nIf you have any other questions or need assistance, feel free to ask! 🎶",
+    "tools": []
+  },
+  {
+    "role": "Customer",
+    "content": "Understood! I regret an online purchase I made, can I return my order?"
+  },
+  {
+    "role": "Virtual Assistant",
+    "content": "Yes, you can return your online purchase! According to our policy, you have up to 7 days from the date of receipt to cancel your order. The item must be in its original packaging. We cover the shipping costs for the return, and you will receive a refund within 10 business days after we process the return.\n\nIf you need help with the return process or have any other questions, just let me know! 😊",
+    "tools": []
+  }
+]
